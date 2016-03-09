@@ -150,10 +150,11 @@ away_goals = int(away_contents[0].strip())
 		else:
 			away_penalties += 1
 
-
-	match = {'home':team_names[0], 'away':team_names[1], 'pos_home':possesion_percentage[0], 'pos_away':possesion_percentage[1],
-	'shots_total_home':shots_total[0], 'shots_total_away':shots_total[1], 'yellow_home':yellow[0], 'yellow_away':yellow[1],
-	'red_home':red[0], 'red_away':red[1], 'home_penalties':home_penalties, 'away_penalties':away_penalties,'shots_ongoal_home':shots_ongoal[0],
-	'shots_ongoal_away':shots_ongoal[1],'goals_home':home_goals,'goals_away':away_goals}
+# [home_name, away_name, home_goals, away_goals, home_penalties, away_penalties, home_totalshots, away_totalshots
+# home_shotsgoal, away_shotsgoal, home_possession, away_possesion, home_yellow, away_yellow, home_red, away_red]
+	
+	match = [team_names[0], team_names[1], home_goals, away_goals, home_penalties, away_penalties, shots_total[0],
+	shots_total[1], shots_ongoal[0], shots_ongoal[1], possesion_percentage[0], possesion_percentage[1],
+	yellow[0], yellow[1], red[0], red[1]]
 
 	print match
