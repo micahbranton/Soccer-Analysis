@@ -193,7 +193,6 @@ def get_game_data (id):
     return game
 
 def write_to_csv (games):
-  with open('games_data.csv', 'w') as csv_file:
       writer = csv.writer(csv_file)
       writer.writerows(games)
 
@@ -205,5 +204,11 @@ list_of_games_data = []
 for game in games_id:
     list_of_games_data.append(get_game_data(game))
 
-for game in list_of_games_data:
-    write_to_csv(game)
+with open('games_data.csv', 'w') as csv_file:
+      write_to_csv(['home_name', 'away_name', 'home_goals', 'away_goals',
+        'home_penalties', 'away_penalties', 'home_totalshots', 'away_totalshots',
+        'home_shotsgoal', 'away_shotsgoal', 'home_possession', 'away_possesion',
+        'home_yellow', 'away_yellow', 'home_red', 'away_red'])
+
+    for game in list_of_games_data:
+        write_to_csv(game)
