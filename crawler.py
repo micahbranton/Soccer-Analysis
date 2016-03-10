@@ -195,10 +195,6 @@ def get_game_data (id):
 def write_to_csv (games):
   with open('games_data.csv', 'w') as csv_file:
       writer = csv.writer(csv_file)
-      writer.writerows(['home_name', 'away_name', 'home_goals', 'away_goals',
-                        'home_penalties', 'away_penalties', 'home_totalshots', 'away_totalshots',
-                        'home_shotsgoal', 'away_shotsgoal', 'home_possession', 'away_possesion',
-                        'home_yellow', 'away_yellow', 'home_red', 'away_red'])
       writer.writerows(games)
 
 # Program
