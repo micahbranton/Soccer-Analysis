@@ -208,11 +208,13 @@ for game in games_id:
     if game_data:
         list_of_games_data.append(game_data)
 
-with open('games_data.csv', 'w') as csv_file:
-      write_to_csv(['home_name', 'away_name', 'home_goals', 'away_goals',
+row_names = ['home_name', 'away_name', 'home_goals', 'away_goals',
         'home_penalties', 'away_penalties', 'home_totalshots', 'away_totalshots',
         'home_shotsgoal', 'away_shotsgoal', 'home_possession', 'away_possesion',
-        'home_yellow', 'away_yellow', 'home_red', 'away_red'])
+        'home_yellow', 'away_yellow', 'home_red', 'away_red']
+
+with open('games_data.csv', 'w') as csv_file:
+    write_to_csv([row_names])
 
     for game in list_of_games_data:
-        write_to_csv(game)
+        write_to_csv([game])
