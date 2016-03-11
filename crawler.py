@@ -44,6 +44,8 @@ def get_game_data (id):
 
     # Home Score
     home_html = soup.find_all("span", {"class":"score icon-font-after"})
+    if not len(home_html):
+        return None
 
     home_contents = [p.contents[0] for p in home_html]
 
@@ -202,7 +204,9 @@ games_id = get_games_id (2016, 3, 5, 2016, 3, 7)
 list_of_games_data = []
 
 for game in games_id:
-    list_of_games_data.append(get_game_data(game))
+    game_data = get_game_data(game)
+    if game_data:
+        list_of_games_data.append(game_data)
 
 with open('games_data.csv', 'w') as csv_file:
       write_to_csv(['home_name', 'away_name', 'home_goals', 'away_goals',
