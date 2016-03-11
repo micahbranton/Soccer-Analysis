@@ -1,6 +1,3 @@
-import requests
-from bs4 import BeautifulSoup
-
 def get_game_data (id):
 
     url = 'http://www.espn.com.ar/futbol/numeritos?juegoId=' + str(id)
@@ -10,6 +7,8 @@ def get_game_data (id):
 
     # Home Score
     home_html = soup.find_all("span", {"class":"score icon-font-after"})
+    if not len(home_html):
+        return None
 
     home_contents = [p.contents[0] for p in home_html]
 
@@ -148,7 +147,7 @@ def get_game_data (id):
         else:
             away_penalties += 1
 
-    # [home_name, away_name, home_goals, away_goals, home_penalties, away_penalties, home_totalshots, away_totalshots
+    # [home_name, away_name, home_goals, away_goals, home_penalties, away_penalties, home_totalshots, away_totalshots,
     # home_shotsgoal, away_shotsgoal, home_possession, away_possesion, home_yellow, away_yellow, home_red, away_red]
         
     game = [team_names[0], team_names[1], home_goals, away_goals,
