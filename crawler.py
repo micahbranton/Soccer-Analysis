@@ -39,6 +39,8 @@ def get_game_data (id):
 
     url = 'http://www.espn.com.ar/futbol/numeritos?juegoId=' + str(id)
 
+    print id
+
     r = requests.get(url)
     soup = BeautifulSoup(r.content,'html.parser')
 
@@ -60,6 +62,9 @@ def get_game_data (id):
 
     # Possession Percentage
     possession_html = soup.find_all("div", {"class":"possession"})
+    
+    if not len(possession_html):
+        return None
 
     for item in possession_html:
         possession_data = item.find_all('span',{"class":"chartValue"})
@@ -142,6 +147,9 @@ def get_game_data (id):
 
     resumen_contents = [p.contents[0] for p in resumen_html]
 
+    if resumen_contents[0] == '\n':
+        return None
+
     resumen_contents_strip = []
 
     for item in resumen_contents: 
@@ -157,6 +165,7 @@ def get_game_data (id):
     shooters = []
 
     # Penalty Shooter
+
     for i in range(len(penalty_contents)):
         inter = penalty_contents[i].split()
         shooters.append(inter[0] + ' ' + inter[1])
@@ -169,9 +178,9 @@ def get_game_data (id):
     home_players = []
     away_players = []
 
-    for num in range(18):
+    for num in range(15):
         home_players.append(players_contents[num].strip())
-    for number in range(18,36):
+    for number in range(17,len(players_contents)):
         away_players.append(players_contents[number].strip())
 
     # Penalty Attribution
@@ -185,12 +194,12 @@ def get_game_data (id):
             away_penalties += 1
 
     # [home_name, away_name, home_goals, away_goals, home_penalties, away_penalties, home_totalshots, away_totalshots,
-    # home_shotsgoal, away_shotsgoal, home_possession, away_possesion, home_yellow, away_yellow, home_red, away_red]
+    # home_shotsgoal, away_shotsgoal, home_possession, away_possesion, home_fouls, away_fouls, home_yellow, away_yellow, home_red, away_red]
         
     game = [team_names[0], team_names[1], home_goals, away_goals,
             home_penalties, away_penalties, shots_total[0], shots_total[1],
             shots_ongoal[0], shots_ongoal[1],possesion_percentage[0], possesion_percentage[1],
-            yellow[0], yellow[1], red[0], red[1]]
+            fouls[0], fouls[1], yellow[0], yellow[1], red[0], red[1]]
 
     return game
 
@@ -199,7 +208,7 @@ def write_to_csv (games):
       writer.writerows(games)
 
 # Program
-games_id = get_games_id (2016, 3, 5, 2016, 3, 7)
+games_id = get_games_id (2015, 1, 31, 2016, 1, 1)
 
 list_of_games_data = []
 
@@ -211,6 +220,7 @@ for game in games_id:
 row_names = ['home_name', 'away_name', 'home_goals', 'away_goals',
         'home_penalties', 'away_penalties', 'home_totalshots', 'away_totalshots',
         'home_shotsgoal', 'away_shotsgoal', 'home_possession', 'away_possesion',
+        'home_fouls', 'away_fouls',
         'home_yellow', 'away_yellow', 'home_red', 'away_red']
 
 with open('games_data.csv', 'w') as csv_file:
