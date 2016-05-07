@@ -37,9 +37,38 @@ def get_games_id (start_year, start_month, start_day, end_year, end_month, end_d
 
 def get_players_goals (id):
 
-    url = 'http://www.espn.com.ar/futbol/comentario?juegoId=' + str(id)
+    # Team Names
+
+    url = 'http://www.espn.com.ar/futbol/numeritos?juegoId=' + str(id)
 
     print id
+
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content,'html.parser')
+
+    possession_html = soup.find_all("div", {"class":"possession"})
+
+    for item in possession_html:
+        name = item.find_all('span',{"class":"team-name"})
+
+    team_names = [n.contents[0] for n in name]
+
+    home_team_raw = team_names[0]
+    away_team_raw = team_names[1]
+
+    if 'Atl Tucum' in home_team_raw:
+        home_team = 'TUC'
+    else:
+        home_team = home_team_raw
+
+    if 'Atl Tucum' in away_team_raw:
+        away_team = 'TUC'
+    else:
+        away_team = away_team_raw
+
+# Comentario
+
+    url = 'http://www.espn.com.ar/futbol/comentario?juegoId=' + str(id)
 
     r = requests.get(url)
     soup = BeautifulSoup(r.content,'html.parser')
@@ -88,18 +117,6 @@ def get_players_goals (id):
     for i in range (len(goal_scorers)):
         goals_scored_raw[goal_scorers[i]] = minutes_scored_raw[i]
 
-    # goles en tiempo de descuento
-
-    for key in goals_scored_raw.keys():
-        if 'OG' in goals_scored_raw[key]:
-            return None
-
-        elif '+' in goals_scored_raw[key]:
-            index = goals_scored_raw[key].index('+')
-            goals_scored[key] = str(int(goals_scored_raw[key][index-3:index-1]) + int(goals_scored_raw[key][index+1])) + "'"
-        else:
-            goals_scored[key] = goals_scored_raw[key]
-
     #jugadores
 
     players_html = soup.find_all("span", {"class":"name"})
@@ -113,6 +130,20 @@ def get_players_goals (id):
         home_players.append(players_contents[num].strip())
     for number in range(18,len(players_contents)):
         away_players.append(players_contents[number].strip())
+
+    # goles en tiempo de descuento o en contra
+
+    for key in goals_scored_raw.keys():
+        if 'OG' in goals_scored_raw[key]:
+            if key in home_players:
+                goals_scored[away_players[0]] = goals_scored_raw[key]
+            elif key in away_players:
+                goals_scored[home_players[0]] = goals_scored_raw[key]
+        elif '+' in goals_scored_raw[key]:
+            index = goals_scored_raw[key].index('+')
+            goals_scored[key] = str(int(goals_scored_raw[key][index-3:index-1]) + int(goals_scored_raw[key][index+1])) + "'"
+        else:
+            goals_scored[key] = goals_scored_raw[key]
 
     # Goals
 
@@ -168,6 +199,13 @@ def get_players_goals (id):
     for link in end_of_game_html:
         end_of_game_raw = link.get("data-minute")
         end_of_game = int(end_of_game_raw)
+
+    # Total minutes per Team
+
+    team_total_played = {}
+
+    team_total_played [home_team] = end_of_game
+    team_total_played [away_team] = end_of_game
 
     # Substitute Names
     
@@ -256,45 +294,61 @@ def get_players_goals (id):
     player_goals = {}
 
     for player in players_time:
-        player_goals [player] = [0,0,players_time[player]]
+        if player in home_players_played:
+            player_goals [player] = [home_team,0,0,players_time[player]]
+        elif player in away_players_played:
+            player_goals [player] = [away_team,0,0,players_time[player]]
 
     if len(home_goals_sorted):
         for goal in home_goals_sorted:
             for player in players_time:
                 if goal < players_time[player] or end_of_game - goal < players_time[player]:
                     if player in home_players:
-                        player_goals[player][0] += 1
-                    elif player in away_players:
                         player_goals[player][1] += 1
+                    elif player in away_players:
+                        player_goals[player][2] += 1
 
     if len(away_goals_sorted):
         for goal in away_goals_sorted:
             for player in players_time:
                 if goal < players_time[player] or end_of_game - goal < players_time[player]:
                     if player in home_players_played:
-                        player_goals[player][1] += 1
+                        player_goals[player][2] += 1
                     elif player in away_players_played:
-                        player_goals[player][0] += 1
+                        player_goals[player][1] += 1
 
-    return player_goals
+    return player_goals, team_total_played
 
 def get_players_data(games_id):
     total_players_goals = {}
+    total_team_data = {}
     for game in games_id:
-        data = get_players_goals(game)
-        for player in data.keys():
-            if player in total_players_goals.keys():
-                total_players_goals[player][0] += data[player][0]
-                total_players_goals[player][1] += data[player][1]
-                total_players_goals[player][2] += data[player][2]
+        player_data, team_data = get_players_goals(game)
+        for team in team_data.keys():
+            if team in total_team_data:
+                total_team_data[team] += team_data[team]
             else:
-                total_players_goals[player] = data[player]
-    return total_players_goals
+                total_team_data[team] = team_data[team]
+        for player in player_data.keys():
+            if player in total_players_goals.keys():
+                total_players_goals[player][1] += player_data[player][1]
+                total_players_goals[player][2] += player_data[player][2]
+                total_players_goals[player][3] += player_data[player][3]
+            else:
+                total_players_goals[player] = player_data[player]
+    return total_players_goals, total_team_data
+
+def get_dict_with_minutes_in_bench(d1,d2):
+    for player in d1.keys():
+        for team in d2.keys():
+            if d1[player][0] == team:
+                d1[player].append(d2[team] - d1[player][3])
+    return d1
 
 def dict_to_list(d):
     dictlist = []
     for key, value in d.items():
-        temp = [key.encode('ASCII','replace'),value[0], value[1],value[2]]
+        temp = [key.encode('ASCII','replace'),value[0], value[1],value[2],value[3],value[4]]
         dictlist.append(temp)
     return dictlist
 
@@ -306,17 +360,17 @@ def write_to_csv (games):
 
 games_id = get_games_id (2016, 4, 30, 2016, 5, 2)
 
-total_players_data = get_players_data(games_id)
+total_players_data, total_team_data = get_players_data(games_id)
 
-players_data_list = dict_to_list(total_players_data)
+total_data = get_dict_with_minutes_in_bench(total_players_data, total_team_data)
 
-row_names = ['player', 'goals_for', 'goals_against', 'minutes_played']
+players_data_list = dict_to_list(total_data)
+
+row_names = ['player', 'goals_for', 'team', 'goals_against', 'minutes_played', 'minutes_benched']
 
 with open('player_data.csv', 'w') as csv_file:
     write_to_csv([row_names])
 
     for player in players_data_list:
         write_to_csv([player])
-
-
 
