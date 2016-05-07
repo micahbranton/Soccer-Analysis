@@ -133,21 +133,6 @@ def goals (id):
 
 	for i in range (len(goal_scorers)):
 		goals_scored_raw[goal_scorers[i]] = minutes_scored_raw[i]
-
-	
-	# goles en tiempo de descuento
-	for key in goals_scored_raw.keys():
-		if 'OG' in goals_scored_raw[key]:
-			return None
-
-		elif '+' in goals_scored_raw[key]:
-			index = goals_scored_raw[key].index('+')
-			goals_scored[key] = str(int(goals_scored_raw[key][index-3:index-1]) + int(goals_scored_raw[key][index+1])) + "'"
-		else:
-			goals_scored[key] = goals_scored_raw[key]
-
-	#jugadores
-	players_html = soup.find_all("span", {"class":"name"})
 	
 	if not len(players_html):
 		return None
@@ -161,6 +146,22 @@ def goals (id):
 		home_players.append(players_contents[num].strip())
 	for number in range(18,len(players_contents)):
 		away_players.append(players_contents[number].strip())
+
+    # goles en tiempo de descuento o en contra
+
+    for key in goals_scored_raw.keys():
+        if 'OG' in goals_scored_raw[key]:
+            if key in home_players:
+                goals_scored[away_players[0]] = goals_scored_raw[key]
+            elif key in away_players:
+                goals_scored[home_players[0]] = goals_scored_raw[key]
+        elif '+' in goals_scored_raw[key]:
+            index = goals_scored_raw[key].index('+')
+            goals_scored[key] = str(int(goals_scored_raw[key][index-3:index-1]) + int(goals_scored_raw[key][index+1])) + "'"
+        else:
+            goals_scored[key] = goals_scored_raw[key]
+
+    # Goals Attribution
 
 	home_goals_raw = []
 	away_goals_raw = []
@@ -196,13 +197,13 @@ def goals (id):
 	if len(home_goals_sorted) < 2 and len(away_goals_sorted) < 2:
 		return None
 
-	if not len(home_goals_sorted):
+	elif not len(home_goals_sorted):
 		two_zero = 'away'
 
-	if not len(away_goals_sorted):
+	elif not len(away_goals_sorted):
 		two_zero = 'home'
 
-	if len(home_goals_sorted) == 1:
+	elif len(home_goals_sorted) == 1:
 		if away_goals_sorted[1] < home_goals_sorted[0]:
 			two_zero = 'away'
 		else:
@@ -228,7 +229,7 @@ def write_to_csv (games):
 
 #Program
 
-games_id = get_games_id (2015, 1, 1, 2016, 1, 1)
+games_id = get_games_id (2014, 1, 1, 2015, 1, 1)
 
 list_of_games_data = []
 
