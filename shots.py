@@ -43,74 +43,81 @@ def get_game_shots (id):
 
     r = requests.get(url)
     soup = BeautifulSoup(r.content,'html.parser')
-    
+
     teams_html = soup.find_all("div", {"class":"possession"})
-
-    if not len(teams_html):
-        return None
-
-    for item in teams_html:
-        name = item.find_all('span',{"class":"team-name"})
-
-    team_names = [n.contents[0] for n in name]
-
-    home_team_raw = team_names[0]
-    away_team_raw = team_names[1]
-
-    if 'Atl Tucum' in home_team_raw:
-        home_team = 'TUC'
-    else:
-        home_team = home_team_raw
-
-    if 'Atl Tucum' in away_team_raw:
-        away_team = 'TUC'
-    else:
-        away_team = away_team_raw
-
-    # Home Score
     home_html = soup.find_all("span", {"class":"score icon-font-after"})
-    if not len(home_html):
-        return None
-
-    home_contents = [p.contents[0] for p in home_html]
-
-    if home_contents[0] == '\n':
-        return None
-
-    home_goals = int(home_contents[0].strip())
-
-    # Away Score
     away_html = soup.find_all("span", {"class":"score icon-font-before"})
-
-    away_contents = [p.contents[0] for p in away_html]
-
-    away_goals = int(away_contents[0].strip())
-
-    #Shots
-
     shots_html = soup.find_all("div", {"class":"shots"})
 
-    if not len(shots_html):
-        return None
+    def teams (teams_html):
 
-    for item in shots_html:
-        shots_data = item.find_all('span',{"class":"number"})
+        if not teams_html:
+            return None
+        for item in teams_html:
+            name = item.find_all('span',{"class":"team-name"})
 
-    shots_contents = [s.contents[0] for s in shots_data]
+        team_names = [n.contents[0] for n in name]
+        home_team_raw = team_names[0]
+        away_team_raw = team_names[1]
 
-    shots_home = shots_contents[0].split()
-    shots_away = shots_contents[1].split()
+        if 'Atl Tucum' in home_team_raw:
+            home_team = 'TUC'
+        else:
+            home_team = home_team_raw
 
-    shots_home_nobrackets = shots_home[1][1:-1]
-    shots_away_nobrackets = shots_away[1][1:-1]
+        if 'Atl Tucum' in away_team_raw:
+            away_team = 'TUC'
+        else:
+            away_team = away_team_raw
 
-    shots_home_num = [int(shots_home[0]),int(shots_home_nobrackets)]
-    shots_away_num = [int(shots_away[0]),int(shots_away_nobrackets)]
+        return home_team, away_team
 
-    home_totalshots = shots_home_num[0]
-    away_totalshots = shots_away_num[0]
-    home_shotsgoal = shots_home_num[1]
-    away_shotsgoal = shots_away_num[1]
+    def html_to_score (html):
+
+        if not len(html):
+            return None
+
+        contents = [p.contents[0] for p in html]
+
+        score_string = (contents[0].strip())
+
+        if not len(score_string):
+            return None
+
+        score = int(score_string)
+
+        return score
+
+    def get_shots(shots_html):
+
+        for item in shots_html:
+            shots_data = item.find_all('span',{"class":"number"})
+
+        shots_contents = [s.contents[0] for s in shots_data]
+
+        shots_home = shots_contents[0].split()
+        shots_away = shots_contents[1].split()
+
+        shots_home_nobrackets = shots_home[1][1:-1]
+        shots_away_nobrackets = shots_away[1][1:-1]
+
+        shots_home_num = [int(shots_home[0]),int(shots_home_nobrackets)]
+        shots_away_num = [int(shots_away[0]),int(shots_away_nobrackets)]
+
+        shots_total = [shots_home_num[0],shots_away_num[0]]
+        shots_ongoal = [shots_home_num[1],shots_away_num[1]]
+
+        return shots_total, shots_ongoal
+
+    home_team, away_team = teams(teams_html)
+    home_goals = html_to_score(home_html)
+    away_goals = html_to_score(away_html)
+    shots_total, shots_ongoal = get_shots(shots_html)
+
+    home_totalshots = shots_total[0]
+    away_totalshots = shots_total[1]
+    home_shotsgoal = shots_ongoal[0]
+    away_shotsgoal = shots_ongoal[1]
 
     game = [home_team, away_team, home_goals, away_goals, home_totalshots,
             away_totalshots, home_shotsgoal, away_shotsgoal]
@@ -121,15 +128,21 @@ def write_to_csv (games):
       writer = csv.writer(csv_file)
       writer.writerows(games)
 
+def get_shots_data(games_id):
+
+    list_of_games_data = []
+
+    for game in games_id:
+        game_data = get_game_shots(game)
+        if game_data:
+            list_of_games_data.append(game_data)
+
+    return list_of_games_data
+
 # Program
-games_id = get_games_id (2016, 2, 1, 2016, 4, 26)
+games_id = get_games_id (2016, 5, 6, 2016, 5, 7)
 
-list_of_games_data = []
-
-for game in games_id:
-    game_data = get_game_shots(game)
-    if game_data:
-        list_of_games_data.append(game_data)
+list_of_games_data = get_shots_data(games_id)
 
 row_names = ['home_name', 'away_name', 'home_goals', 'away_goals',
             'home_totalshots', 'away_totalshots',

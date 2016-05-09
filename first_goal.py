@@ -44,14 +44,30 @@ def teams (id):
 
     teams_html = soup.find_all("div", {"class":"possession"})
 
-    if not teams_html:
-    	return None
+    def html_to_teams (teams_html):
 
-    # Team Names
-    for item in teams_html:
-        name = item.find_all('span',{"class":"team-name"})
+        if not teams_html:
+            return None
+        for item in teams_html:
+            name = item.find_all('span',{"class":"team-name"})
 
-    team_names = [n.contents[0] for n in name]
+        team_names = [n.contents[0] for n in name]
+        home_team_raw = team_names[0]
+        away_team_raw = team_names[1]
+
+        if 'Atl Tucum' in home_team_raw:
+            home_team = 'TUC'
+        else:
+            home_team = home_team_raw
+
+        if 'Atl Tucum' in away_team_raw:
+            away_team = 'TUC'
+        else:
+            away_team = away_team_raw
+
+        return [home_team, away_team]
+
+    team_names = html_to_teams(teams_html)
 
     return team_names
 
@@ -62,9 +78,10 @@ def score (id):
     r = requests.get(url)
     soup = BeautifulSoup(r.content,'html.parser')
 
-    # Home Score
+    home_html = soup.find_all("span", {"class":"score icon-font-after"})
+    away_html = soup.find_all("span", {"class":"score icon-font-before"})
 
-    def html_to_name (html):
+    def html_to_score (html):
 
 	    if not len(html):
 	        return None
@@ -80,17 +97,10 @@ def score (id):
 
 	    return score
 
-
-    home_html = soup.find_all("span", {"class":"score icon-font-after"})
-
-    home_score = html_to_name(home_html)
-
-    away_html = soup.find_all("span", {"class":"score icon-font-before"})
-
-    away_score = html_to_name(away_html)
+    home_score = html_to_score(home_html)
+    away_score = html_to_score(away_html)
 
     return [home_score, away_score]
-
 
 def goals (id):
 
@@ -99,7 +109,8 @@ def goals (id):
 	r = requests.get(url)
 	soup = BeautifulSoup(r.content,'html.parser')
 
-	#jugadores
+	players_html = soup.find_all("span", {"class":"name"})
+	goals_html = soup.find_all("ul", {"data-event-type":"goal"})
 	
 	def html_to_players(html):
 
@@ -117,12 +128,6 @@ def goals (id):
 			away_players.append(players_contents[number].strip())
 
 		return home_players, away_players
-
-	players_html = soup.find_all("span", {"class":"name"})
-
-	home_players, away_players = html_to_players(players_html)
-
-	#goals
 
 	def html_to_scorers(html):
 
@@ -143,7 +148,7 @@ def goals (id):
 
 		return goal_scorers
 
-	def html_to_goal_minutes(html):
+	def html_to_goal_minutes(html, home_players, away_players):
 
 		minutes_html = []
 
@@ -165,26 +170,21 @@ def goals (id):
 
 	    # goles en tiempo de descuento o en contra
 
-	    for key in goals_scored_raw.keys():
-	        if 'OG' in goals_scored_raw[key]:
-	            if key in home_players:
-	                goals_scored[away_players[0]] = goals_scored_raw[key]
-	            elif key in away_players:
-	                goals_scored[home_players[0]] = goals_scored_raw[key]
-	        elif '+' in goals_scored_raw[key]:
-	            index = goals_scored_raw[key].index('+')
-	            goals_scored[key] = str(int(goals_scored_raw[key][index-3:index-1]) + int(goals_scored_raw[key][index+1])) + "'"
-	        else:
-	            goals_scored[key] = goals_scored_raw[key]
+	   	for key in goals_scored_raw.keys():
+	   		if 'OG' in goals_scored_raw[key]:
+	   			if key in home_players:
+	   				goals_scored[away_players[0]] = goals_scored_raw[key]
+	   			elif key in away_players:
+	   				goals_scored[home_players[0]] = goals_scored_raw[key]
+	   		elif '+' in goals_scored_raw[key]:
+	   			index = goals_scored_raw[key].index('+')
+	   			goals_scored[key] = str(int(goals_scored_raw[key][index-3:index-1]) + int(goals_scored_raw[key][index+1])) + "'"
+	   		else:
+	   			goals_scored[key] = goals_scored_raw[key]
 
-	    return goals_scored
+	   	return goals_scored
 
-	goals_html = soup.find_all("ul", {"data-event-type":"goal"})
-
-	goal_scorers = html_to_scorers(goals_html)
-	goals_scored = html_to_goal_minutes(goals_html)
-
-	def goal_attribution(goals_scored):
+	def goal_attribution(goals_scored, home_players, away_players):
 
 		home_goals_raw = []
 		away_goals_raw = []
@@ -192,7 +192,7 @@ def goals (id):
 		for key in goals_scored.keys():
 			if key in home_players:
 				home_goals_raw.append(goals_scored[key])
-			else:
+			elif key in away_players:
 				away_goals_raw.append(goals_scored[key])
 
 		home_goals = []
@@ -219,8 +219,6 @@ def goals (id):
 
 		return home_goals_sorted, away_goals_sorted
 
-	home_goals_sorted, away_goals_sorted = goal_attribution(goals_scored)
-
 	def first_goal_team(home_goals, away_goals):
 
 		if not len(home_goals):
@@ -234,6 +232,10 @@ def goals (id):
 
 		return first_goal
 
+	home_players, away_players = html_to_players(players_html)
+	goal_scorers = html_to_scorers(goals_html)
+	goals_scored = html_to_goal_minutes(goals_html, home_players, away_players)
+	home_goals_sorted, away_goals_sorted = goal_attribution(goals_scored, home_players, away_players)
 	first_goal = first_goal_team(home_goals_sorted, away_goals_sorted)
 
 	return first_goal
@@ -261,13 +263,13 @@ def get_first_goal_data(games_id):
 
 # Program
 
-games_id = get_games_id (2015, 1, 1, 2016, 1, 1)
+games_id = get_games_id (2016, 5, 6, 2016, 5, 7)
 
 list_of_games_data = get_first_goal_data(games_id)
 
 row_names = ['home_score', 'away_score', 'first_goal', 'home_team', 'away_team']
 
-with open('games_data_score.csv', 'w') as csv_file:
+with open('first_goal.csv', 'w') as csv_file:
     write_to_csv([row_names])
 
     for game in list_of_games_data:
