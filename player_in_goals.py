@@ -136,8 +136,9 @@ def goals (id):
         goals_scored_raw = {}
         goals_scored = {}
 
-        for i in range (len(goal_scorers)):
-            goals_scored_raw[goal_scorers[i]] = minutes_scored_raw[i]
+        if goal_scorers:
+            for i in range (len(goal_scorers)):
+                goals_scored_raw[goal_scorers[i]] = minutes_scored_raw[i]
 
         # goles en tiempo de descuento o en contra
 
@@ -371,8 +372,13 @@ def get_players_in_goals(id):
     subs_in, subs_out = get_subs_names(subs_html)
     home_subs, away_subs = get_subs_per_team(home_players, away_players)
     home_players_played, away_players_played = get_players_that_played(home_players, away_players, home_subs, away_subs)
-    red_times = get_red_card_times(red_times_html)
-    red_names = get_red_card_names(red_html)
+    if id == '440385':
+        red_times = [44,52]
+        red_names = [home_players[4], away_players[4]]
+    else:
+        red_times = get_red_card_times(red_times_html)
+        red_names = get_red_card_names(red_html)
+
     players_time = time_per_player(home_players_played, away_players_played, end_of_game, subs_in,
                     subs_out, red_times, red_names)
     player_in_goals = player_in_goal (players_time, home_players_played, away_players_played, home_team,
@@ -424,7 +430,7 @@ def write_to_csv (games):
 
 # Program
 
-games_id = get_games_id (2016, 5, 6, 2016, 5, 7)
+games_id = get_games_id (2016, 2, 1, 2016, 5, 10)
 
 total_players_data, total_team_data = get_players_data(games_id)
 
@@ -432,7 +438,7 @@ total_data = get_dict_with_minutes_in_bench(total_players_data, total_team_data)
 
 players_data_list = dict_to_list(total_data)
 
-row_names = ['player', 'goals_for', 'team', 'goals_against', 'minutes_played', 'minutes_benched']
+row_names = ['player', 'team', 'goals_for', 'goals_against', 'minutes_played', 'minutes_benched']
 
 with open('player_in_goals.csv', 'w') as csv_file:
     write_to_csv([row_names])
