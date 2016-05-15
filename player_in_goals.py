@@ -384,20 +384,25 @@ def get_players_in_goals(id):
     player_in_goals = player_in_goal (players_time, home_players_played, away_players_played, home_team,
                     away_team, home_goals_sorted, away_goals_sorted, end_of_game)
     team_total_played = total_team_played(end_of_game, home_team, away_team)
+    team_goal_difference = {}
+    team_goal_difference[home_team] = [len(home_goals_sorted), len(away_goals_sorted)]
+    team_goal_difference[away_team] = [len(away_goals_sorted), len(home_goals_sorted)]
 
-    return player_in_goals, team_total_played
+    return player_in_goals, team_total_played, team_goal_difference
 
 def get_players_data(games_id):
 
     total_players_goals = {}
     total_team_data = {}
     for game in games_id:
-        player_data, team_data = get_players_in_goals(game)
-        for team in team_data.keys():
+        player_data, team_time, team_goal_difference = get_players_in_goals(game)
+        for team in team_time.keys():
             if team in total_team_data:
-                total_team_data[team] += team_data[team]
+                total_team_data[team][0] += team_time[team]
+                total_team_data[team][1] += team_goal_difference[team][0]
+                total_team_data[team][2] += team_goal_difference[team][1]
             else:
-                total_team_data[team] = team_data[team]
+                total_team_data[team] = [team_time[team], team_goal_difference[team][0], team_goal_difference[team][1]]
         for player in player_data.keys():
             if player in total_players_goals.keys():
                 total_players_goals[player][1] += player_data[player][1]
@@ -405,6 +410,7 @@ def get_players_data(games_id):
                 total_players_goals[player][3] += player_data[player][3]
             else:
                 total_players_goals[player] = player_data[player]
+
     return total_players_goals, total_team_data
 
 def get_dict_with_minutes_in_bench(d1,d2):
@@ -412,15 +418,19 @@ def get_dict_with_minutes_in_bench(d1,d2):
     for player in d1.keys():
         for team in d2.keys():
             if d1[player][0] == team:
-                d1[player].append(d2[team] - d1[player][3])
+                d1[player].append(d2[team][0] - d1[player][3])
+                d1[player].append(d2[team][1])
+                d1[player].append(d2[team][2])
+
     return d1
 
 def dict_to_list(d):
 
     dictlist = []
     for key, value in d.items():
-        temp = [key.encode('ASCII','replace'),value[0], value[1],value[2],value[3],value[4]]
+        temp = [key.encode('ASCII','replace'),value[0], value[1],value[2],value[3],value[4],value[5],value[6]]
         dictlist.append(temp)
+
     return dictlist
 
 def write_to_csv (games):
@@ -430,7 +440,7 @@ def write_to_csv (games):
 
 # Program
 
-games_id = get_games_id (2016, 2, 1, 2016, 5, 10)
+games_id = get_games_id (2016, 5, 13, 2016, 5, 14)
 
 total_players_data, total_team_data = get_players_data(games_id)
 
@@ -438,7 +448,8 @@ total_data = get_dict_with_minutes_in_bench(total_players_data, total_team_data)
 
 players_data_list = dict_to_list(total_data)
 
-row_names = ['player', 'team', 'goals_for', 'goals_against', 'minutes_played', 'minutes_benched']
+row_names = ['player', 'team', 'goals_for', 'goals_against',
+            'minutes_played', 'minutes_benched', 'team_goals_for', 'team_goals_against']
 
 with open('player_in_goals.csv', 'w') as csv_file:
     write_to_csv([row_names])
