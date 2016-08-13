@@ -440,7 +440,7 @@ def write_to_csv (games):
 
 # Program
 
-games_id = get_games_id (2016, 5, 13, 2016, 5, 14)
+games_id = get_games_id (2016, 2, 5, 2016, 5, 30)
 
 total_players_data, total_team_data = get_players_data(games_id)
 

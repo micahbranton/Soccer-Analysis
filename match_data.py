@@ -262,7 +262,7 @@ def get_match_data (games_id):
     return list_of_games_data
 
 # Program
-games_id = get_games_id (2016, 5, 6, 2016, 5, 7)
+games_id = get_games_id (2016, 2, 5, 2016, 5, 30)
 
 list_of_games_data = get_match_data(games_id)
 
