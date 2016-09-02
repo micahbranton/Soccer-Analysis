@@ -3,7 +3,7 @@ from datetime import date, timedelta
 import requests
 from bs4 import BeautifulSoup
 import csv
-
+htop
 def date_range(start_date, end_date):
     for n in range((end_date - start_date).days):
         yield (start_date + timedelta(n)).strftime('%Y%m%d')
