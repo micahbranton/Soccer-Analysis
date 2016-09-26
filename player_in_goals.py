@@ -1,27 +1,49 @@
-from selenium import webdriver
-from datetime import date, timedelta
 import requests
+
+from datetime import date, timedelta
+from selenium import webdriver
+
+import pandas as pd
+
 from bs4 import BeautifulSoup
-import csv
+
 
 def date_range(start_date, end_date):
     for n in range((end_date - start_date).days):
         yield (start_date + timedelta(n)).strftime('%Y%m%d')
 
-def get_games_id (start_year, start_month, start_day, end_year, end_month, end_day):
-    
+
+def get_games_id(
+        start_year,
+        start_month,
+        start_day,
+        end_year,
+        end_month,
+        end_day):
+
     games_id = []
     dates = []
 
-    for item in date_range(date(start_year, start_month, start_day), date(end_year, end_month, end_day)):
+    for item in date_range(
+        date(
+            start_year,
+            start_month,
+            start_day),
+        date(
+            end_year,
+            end_month,
+            end_day)):
         dates.append(item)
 
     driver = webdriver.Chrome()
 
     for day in dates:
-        driver.get('http://www.espn.com.ar/futbol/resultados/_/liga/arg.1/fecha/' + day)
+        driver.get(
+            'http://www.espn.com.ar/futbol/resultados/_/liga/arg.1/fecha/' +
+            day)
 
-        game_link_driver = driver.find_elements_by_name('&lpos=soccer:scoreboard:resumen')
+        game_link_driver = driver.find_elements_by_name(
+            '&lpos=soccer:scoreboard:resumen')
 
         game_links = []
 
@@ -35,37 +57,41 @@ def get_games_id (start_year, start_month, start_day, end_year, end_month, end_d
 
     return games_id
 
-def teams (id):
+
+def teams(id):
 
     url = 'http://www.espn.com.ar/futbol/numeritos?juegoId=' + str(id)
 
-    print id
+    print(id)
 
     r = requests.get(url)
-    soup = BeautifulSoup(r.content,'html.parser')
+    soup = BeautifulSoup(r.content, 'html.parser')
 
-    teams_html = soup.find_all("div", {"class":"possession"})
+    teams_html = soup.find_all("div", {"class": "possession"})
 
-    def html_to_teams (teams_html):
+    if teams_html is None or not len(teams_html):
+        return None
 
-        if not teams_html:
-            return None
+    def html_to_teams(teams_html):
+
         for item in teams_html:
-            name = item.find_all('span',{"class":"team-name"})
+            name = item.find_all('span', {"class": "team-name"})
 
         team_names = [n.contents[0] for n in name]
-        home_team_raw = team_names[0]
-        away_team_raw = team_names[1]
+        home_team_temp = team_names[0]
+        away_team_temp = team_names[1]
 
-        if 'Atl Tucum' in home_team_raw:
-            home_team = 'TUC'
-        else:
-            home_team = home_team_raw
+        # Change Name if Atletico Tucuman
 
-        if 'Atl Tucum' in away_team_raw:
-            away_team = 'TUC'
-        else:
-            away_team = away_team_raw
+        def change_tuc(team_name):
+            if 'Atl Tucum' in team_name:
+                team_name_new = 'TUC'
+            else:
+                team_name_new = team_name
+            return team_name_new
+
+        home_team = change_tuc(home_team_temp)
+        away_team = change_tuc(away_team_temp)
 
         return home_team, away_team
 
@@ -73,36 +99,38 @@ def teams (id):
 
     return home_team, away_team
 
+
 def html_to_players(html):
 
-    if not len(html):
+    if not len(html) or html is None:
         return None
 
-    players_contents = [ p.contents[0] for p in html ]
+    players_contents = [p.contents[0] for p in html]
 
     home_players = []
     away_players = []
 
     for num in range(18):
         home_players.append(players_contents[num].strip())
-    for number in range(18,len(players_contents)):
+    for number in range(18, len(players_contents)):
         away_players.append(players_contents[number].strip())
 
     return home_players, away_players
 
-def goals (id):
+
+def goals(id):
 
     url = 'http://www.espn.com.ar/futbol/comentario?juegoId=' + str(id)
 
     r = requests.get(url)
-    soup = BeautifulSoup(r.content,'html.parser')
+    soup = BeautifulSoup(r.content, 'html.parser')
 
-    players_html = soup.find_all("span", {"class":"name"})
-    goals_html = soup.find_all("ul", {"data-event-type":"goal"})
+    players_html = soup.find_all("span", {"class": "name"})
+    goals_html = soup.find_all("ul", {"data-event-type": "goal"})
 
     def html_to_scorers(html):
 
-        if not len(html):
+        if not len(html) or html is None:
             return None
 
         list_html = []
@@ -113,7 +141,7 @@ def goals (id):
         goal_scorers = []
 
         for content in list_html:
-            goal_contents = [ p.contents[0] for p in content ]
+            goal_contents = [p.contents[0] for p in content]
             for scorer in goal_contents:
                 goal_scorers.append(scorer.strip())
 
@@ -129,7 +157,7 @@ def goals (id):
         minutes_scored_raw = []
 
         for content in minutes_html:
-            minutes_contents = [ p.contents[0] for p in content ]
+            minutes_contents = [p.contents[0] for p in content]
             for minute in minutes_contents:
                 minutes_scored_raw.append(minute)
 
@@ -137,7 +165,7 @@ def goals (id):
         goals_scored = {}
 
         if goal_scorers:
-            for i in range (len(goal_scorers)):
+            for i in range(len(goal_scorers)):
                 goals_scored_raw[goal_scorers[i]] = minutes_scored_raw[i]
 
         # goles en tiempo de descuento o en contra
@@ -150,7 +178,8 @@ def goals (id):
                     goals_scored[home_players[0]] = goals_scored_raw[key]
             elif '+' in goals_scored_raw[key]:
                 index = goals_scored_raw[key].index('+')
-                goals_scored[key] = str(int(goals_scored_raw[key][index-3:index-1]) + int(goals_scored_raw[key][index+1])) + "'"
+                goals_scored[key] = str(int(goals_scored_raw[key][
+                                        index - 3:index - 1]) + int(goals_scored_raw[key][index + 1])) + "'"
             else:
                 goals_scored[key] = goals_scored_raw[key]
 
@@ -173,18 +202,18 @@ def goals (id):
         for element in home_goals_raw:
             for i in range(len(element)):
                 if element[i] == "'":
-                    if element[i-2] == '(':
-                         home_goals.append(int(element[i-1]))
+                    if element[i - 2] == '(':
+                        home_goals.append(int(element[i - 1]))
                     else:
-                        home_goals.append(int(element[i-2:i]))
+                        home_goals.append(int(element[i - 2:i]))
 
         for element in away_goals_raw:
             for i in range(len(element)):
                 if element[i] == "'":
-                    if element[i-2] == '(':
-                         away_goals.append(int(element[i-1]))
+                    if element[i - 2] == '(':
+                        away_goals.append(int(element[i - 1]))
                     else:
-                        away_goals.append(int(element[i-2:i]))
+                        away_goals.append(int(element[i - 2:i]))
 
         home_goals_sorted = sorted(home_goals)
         away_goals_sorted = sorted(away_goals)
@@ -193,33 +222,37 @@ def goals (id):
 
     home_players, away_players = html_to_players(players_html)
     goal_scorers = html_to_scorers(goals_html)
-    goals_scored = html_to_goal_minutes(goals_html,home_players,away_players)
-    home_goals_sorted, away_goals_sorted = goal_attribution(goals_scored,home_players,away_players)
+    goals_scored = html_to_goal_minutes(goals_html, home_players, away_players)
+    home_goals_sorted, away_goals_sorted = goal_attribution(
+        goals_scored, home_players, away_players)
 
     return home_goals_sorted, away_goals_sorted
+
 
 def get_players_in_goals(id):
 
     url = 'http://www.espn.com.ar/futbol/comentario?juegoId=' + str(id)
 
     r = requests.get(url)
-    soup = BeautifulSoup(r.content,'html.parser')
+    soup = BeautifulSoup(r.content, 'html.parser')
 
-    players_html = soup.find_all("span", {"class":"name"})
-    substitution_times_html = soup.find_all("span", {"data-event-type":"substitution"})
-    end_of_game_html = soup.find_all("li", {"data-time":"FT"})
+    players_html = soup.find_all("span", {"class": "name"})
+    substitution_times_html = soup.find_all(
+        "span", {"data-event-type": "substitution"})
+    end_of_game_html = soup.find_all("li", {"data-time": "FT"})
     subs_html = soup.find_all("span")
-    red_times_html = soup.find_all("span", {"data-event-type":"red-card"})
-    red_html = soup.find_all("div", {"class":"detail"})
+    red_times_html = soup.find_all("span", {"data-event-type": "red-card"})
+    red_html = soup.find_all("div", {"class": "detail"})
 
-    def get_subs_times (substitution_times_html):
+    def get_subs_times(substitution_times_html):
 
         subs_times = [n.contents[0] for n in substitution_times_html]
 
         for i in range(len(subs_times)):
             if '+' in subs_times[i]:
                 index = subs_times[i].index('+')
-                subs_times[i] = str(int(subs_times[i][index-2:index]) + int(subs_times[i][index+1]))
+                subs_times[i] = str(
+                    int(subs_times[i][index - 2:index]) + int(subs_times[i][index + 1]))
 
         for i in range(len(subs_times)):
             subs_times[i] = int(subs_times[i])
@@ -238,8 +271,8 @@ def get_players_in_goals(id):
 
         team_total_played = {}
 
-        team_total_played [home_team] = end_of_game
-        team_total_played [away_team] = end_of_game
+        team_total_played[home_team] = end_of_game
+        team_total_played[away_team] = end_of_game
 
         return team_total_played
 
@@ -266,11 +299,15 @@ def get_players_in_goals(id):
             if sub in home_players:
                 home_subs += 1
             elif sub in away_players:
-                away_subs +=1
+                away_subs += 1
 
         return home_subs, away_subs
 
-    def get_players_that_played(home_players, away_players, home_subs, away_subs):
+    def get_players_that_played(
+            home_players,
+            away_players,
+            home_subs,
+            away_subs):
 
         home_players_played = []
         away_players_played = []
@@ -289,7 +326,8 @@ def get_players_in_goals(id):
         for i in range(len(red_times)):
             if '+' in red_times[i]:
                 index = red_times[i].index('+')
-                red_times[i] = str(int(red_times[i][index-2:index]) + int(red_times[i][index+1]))
+                red_times[i] = str(
+                    int(red_times[i][index - 2:index]) + int(red_times[i][index + 1]))
 
         for i in range(len(red_times)):
             red_times[i] = int(red_times[i])
@@ -309,7 +347,14 @@ def get_players_in_goals(id):
 
         return red_names
 
-    def time_per_player(home_players_played, away_players_played, end_of_game, subs_in, subs_out, red_times, red_names):
+    def time_per_player(
+            home_players_played,
+            away_players_played,
+            end_of_game,
+            subs_in,
+            subs_out,
+            red_times,
+            red_names):
 
         players_time = {}
 
@@ -323,31 +368,41 @@ def get_players_in_goals(id):
             player_in = subs_in[i]
             player_out = subs_out[i]
             time = int(subs_times[i])
-            players_time [player_in] = end_of_game - time
-            players_time [player_out] = time
+            players_time[player_in] = end_of_game - time
+            players_time[player_out] = time
 
         for i in range(len(red_names)):
             player_red = red_names[i]
             time = red_times[i]
-            players_time [player_red] = time
+            players_time[player_red] = time
 
         return players_time
 
-    def player_in_goal (players_time, home_players_played, away_players_played, home_team,
-                    away_team, home_goals_sorted, away_goals_sorted, end_of_game):
+    def player_in_goal(
+            players_time,
+            home_players_played,
+            away_players_played,
+            home_team,
+            away_team,
+            home_goals_sorted,
+            away_goals_sorted,
+            end_of_game):
 
         player_in_goals = {}
 
         for player in players_time:
             if player in home_players_played:
-                player_in_goals [player] = [home_team,0,0,players_time[player]]
+                player_in_goals[player] = [
+                    home_team, 0, 0, players_time[player]]
             elif player in away_players_played:
-                player_in_goals [player] = [away_team,0,0,players_time[player]]
+                player_in_goals[player] = [
+                    away_team, 0, 0, players_time[player]]
 
         if len(home_goals_sorted):
             for goal in home_goals_sorted:
                 for player in players_time:
-                    if goal < players_time[player] or end_of_game - goal < players_time[player]:
+                    if goal < players_time[
+                            player] or end_of_game - goal < players_time[player]:
                         if player in home_players_played:
                             player_in_goals[player][1] += 1
                         elif player in away_players_played:
@@ -356,7 +411,8 @@ def get_players_in_goals(id):
         if len(away_goals_sorted):
             for goal in away_goals_sorted:
                 for player in players_time:
-                    if goal < players_time[player] or end_of_game - goal < players_time[player]:
+                    if goal < players_time[
+                            player] or end_of_game - goal < players_time[player]:
                         if player in home_players_played:
                             player_in_goals[player][2] += 1
                         elif player in away_players_played:
@@ -364,56 +420,84 @@ def get_players_in_goals(id):
 
         return player_in_goals
 
+    teams_temp = teams(id)
+    if teams_temp is None:
+        return None
     home_team, away_team = teams(id)
     home_players, away_players = html_to_players(players_html)
     home_goals_sorted, away_goals_sorted = goals(id)
-    subs_times = get_subs_times (substitution_times_html)
+    subs_times = get_subs_times(substitution_times_html)
     end_of_game = end_of_game(end_of_game_html)
     subs_in, subs_out = get_subs_names(subs_html)
     home_subs, away_subs = get_subs_per_team(home_players, away_players)
-    home_players_played, away_players_played = get_players_that_played(home_players, away_players, home_subs, away_subs)
+    home_players_played, away_players_played = get_players_that_played(
+        home_players, away_players, home_subs, away_subs)
     if id == '440385':
-        red_times = [44,52]
+        red_times = [44, 52]
         red_names = [home_players[4], away_players[4]]
     else:
         red_times = get_red_card_times(red_times_html)
         red_names = get_red_card_names(red_html)
 
-    players_time = time_per_player(home_players_played, away_players_played, end_of_game, subs_in,
-                    subs_out, red_times, red_names)
-    player_in_goals = player_in_goal (players_time, home_players_played, away_players_played, home_team,
-                    away_team, home_goals_sorted, away_goals_sorted, end_of_game)
+    players_time = time_per_player(
+        home_players_played,
+        away_players_played,
+        end_of_game,
+        subs_in,
+        subs_out,
+        red_times,
+        red_names)
+    player_in_goals = player_in_goal(
+        players_time,
+        home_players_played,
+        away_players_played,
+        home_team,
+        away_team,
+        home_goals_sorted,
+        away_goals_sorted,
+        end_of_game)
     team_total_played = total_team_played(end_of_game, home_team, away_team)
     team_goal_difference = {}
-    team_goal_difference[home_team] = [len(home_goals_sorted), len(away_goals_sorted)]
-    team_goal_difference[away_team] = [len(away_goals_sorted), len(home_goals_sorted)]
+    team_goal_difference[home_team] = [
+        len(home_goals_sorted),
+        len(away_goals_sorted)]
+    team_goal_difference[away_team] = [
+        len(away_goals_sorted),
+        len(home_goals_sorted)]
 
     return player_in_goals, team_total_played, team_goal_difference
+
 
 def get_players_data(games_id):
 
     total_players_goals = {}
     total_team_data = {}
     for game in games_id:
-        player_data, team_time, team_goal_difference = get_players_in_goals(game)
-        for team in team_time.keys():
-            if team in total_team_data:
-                total_team_data[team][0] += team_time[team]
-                total_team_data[team][1] += team_goal_difference[team][0]
-                total_team_data[team][2] += team_goal_difference[team][1]
-            else:
-                total_team_data[team] = [team_time[team], team_goal_difference[team][0], team_goal_difference[team][1]]
-        for player in player_data.keys():
-            if player in total_players_goals.keys():
-                total_players_goals[player][1] += player_data[player][1]
-                total_players_goals[player][2] += player_data[player][2]
-                total_players_goals[player][3] += player_data[player][3]
-            else:
-                total_players_goals[player] = player_data[player]
+        if game != 462905:
+            player_data, team_time, team_goal_difference = get_players_in_goals(
+                game)
+            for team in team_time.keys():
+                if team in total_team_data:
+                    total_team_data[team][0] += team_time[team]
+                    total_team_data[team][1] += team_goal_difference[team][0]
+                    total_team_data[team][2] += team_goal_difference[team][1]
+                else:
+                    total_team_data[team] = [
+                        team_time[team],
+                        team_goal_difference[team][0],
+                        team_goal_difference[team][1]]
+            for player in player_data.keys():
+                if player in total_players_goals.keys():
+                    total_players_goals[player][1] += player_data[player][1]
+                    total_players_goals[player][2] += player_data[player][2]
+                    total_players_goals[player][3] += player_data[player][3]
+                else:
+                    total_players_goals[player] = player_data[player]
 
     return total_players_goals, total_team_data
 
-def get_dict_with_minutes_in_bench(d1,d2):
+
+def get_dict_with_minutes_in_bench(d1, d2):
 
     for player in d1.keys():
         for team in d2.keys():
@@ -424,37 +508,73 @@ def get_dict_with_minutes_in_bench(d1,d2):
 
     return d1
 
+
 def dict_to_list(d):
 
     dictlist = []
     for key, value in d.items():
-        temp = [key.encode('ASCII','replace'),value[0], value[1],value[2],value[3],value[4],value[5],value[6]]
+        temp = [
+            key.encode(
+                'ASCII',
+                'replace'),
+            value[0],
+            value[1],
+            value[2],
+            value[3],
+            value[4],
+            value[5],
+            value[6]]
         dictlist.append(temp)
 
     return dictlist
 
-def write_to_csv (games):
-
-      writer = csv.writer(csv_file)
-      writer.writerows(games)
 
 # Program
 
-games_id = get_games_id (2016, 2, 5, 2016, 5, 30)
+games_id = get_games_id(2016, 2, 5, 2016, 9, 26)
+
 
 total_players_data, total_team_data = get_players_data(games_id)
 
-total_data = get_dict_with_minutes_in_bench(total_players_data, total_team_data)
+total_data = get_dict_with_minutes_in_bench(
+    total_players_data, total_team_data)
 
 players_data_list = dict_to_list(total_data)
 
-row_names = ['player', 'team', 'goals_for', 'goals_against',
-            'minutes_played', 'minutes_benched', 'team_goals_for', 'team_goals_against']
+col_names = [
+    'player',
+    'team',
+    'goals_for',
+    'goals_against',
+    'minutes_played',
+    'minutes_benched',
+    'team_goals_for',
+    'team_goals_against']
 
-with open('player_in_goals.csv', 'w') as csv_file:
-    write_to_csv([row_names])
+total_data = pd.DataFrame(columns=col_names)
 
-    for player in players_data_list:
-        write_to_csv([player])
+for data in players_data_list:
+    total_data.loc[len(total_data)] = data
 
+total_data['team_goals'] = total_data[
+    'team_goals_for'] - total_data['goals_for']
+total_data['ag_team_goals'] = total_data[
+    'team_goals_against'] - total_data['goals_against']
 
+total_data['90m_player_goals'] = 90 * \
+    total_data['goals_for'] / total_data['minutes_played']
+
+total_data['ag_90m_player_goals'] = 90 * \
+    total_data['goals_against'] / total_data['minutes_played']
+
+total_data['90m_team_goals'] = 90 * \
+    total_data['team_goals'] / total_data['minutes_benched']
+
+total_data['ag_90m_team_goals'] = 90 * \
+    total_data['ag_team_goals'] / total_data['minutes_benched']
+
+total_data = total_data.fillna(0)
+
+path = 'player_in_goals_2016_9_19.csv'
+
+total_data.to_csv(path, index=False)
