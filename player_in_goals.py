@@ -19,7 +19,7 @@ def get_games_id(
         start_day,
         end_year,
         end_month,
-        end_day):
+        end_day, competition):
 
     games_id = []
     dates = []
@@ -37,10 +37,21 @@ def get_games_id(
 
     driver = webdriver.Chrome()
 
+    if competition == 'liga':
+        link_part = 'arg.1'
+    elif competition == 'copa_arg':
+        link_part = 'arg.copa'
+    elif competition == 'copa_lib':
+        link_part = 'conmebol.libertadores'
+    elif competition == 'supercopa':
+        link_part = 'arg.supercopa'
+    elif competition == 'copa_sud':
+        link_part = 'conmebol.sudamericana'
+
+    link = 'http://www.espn.com.ar/futbol/resultados/_/liga/{0}/fecha/'.format(
+        link_part)
     for day in dates:
-        driver.get(
-            'http://www.espn.com.ar/futbol/resultados/_/liga/arg.1/fecha/' +
-            day)
+        driver.get(link + day)
 
         game_link_driver = driver.find_elements_by_name(
             '&lpos=soccer:scoreboard:resumen')
@@ -61,8 +72,6 @@ def get_games_id(
 def teams(id):
 
     url = 'http://www.espn.com.ar/futbol/numeritos?juegoId=' + str(id)
-
-    print(id)
 
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
@@ -107,13 +116,19 @@ def html_to_players(html):
 
     players_contents = [p.contents[0] for p in html]
 
+    total_players = []
     home_players = []
     away_players = []
 
+    for player in players_contents:
+        strip_player = player.strip()
+        if strip_player != '':
+            total_players.append(strip_player)
+
     for num in range(18):
-        home_players.append(players_contents[num].strip())
-    for number in range(18, len(players_contents)):
-        away_players.append(players_contents[number].strip())
+        home_players.append(total_players[num])
+    for number in range(18, len(total_players)):
+        away_players.append(total_players[number])
 
     return home_players, away_players
 
@@ -232,7 +247,6 @@ def goals(id):
 def get_players_in_goals(id):
 
     url = 'http://www.espn.com.ar/futbol/comentario?juegoId=' + str(id)
-
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
 
@@ -284,9 +298,11 @@ def get_players_in_goals(id):
         for span in subs_html:
             string_span = str(span)
             if 'En:' in string_span:
-                subs_in.append(string_span[27:-7].decode('utf-8', 'ignore'))
+                subs_in.append(string_span[27:-7])
+                # subs_in.append(string_span[27:-7].decode('utf-8', 'ignore'))
             elif 'Fuera:' in string_span:
-                subs_out.append(string_span[50:-7].decode('utf-8', 'ignore'))
+                subs_out.append(string_span[50:-7])
+                # subs_out.append(string_span[50:-7].decode('utf-8', 'ignore'))
 
         return subs_in, subs_out
 
@@ -321,6 +337,12 @@ def get_players_in_goals(id):
 
     def get_red_card_times(red_times_html):
 
+        if not len(red_times_html):
+            return []
+
+        if not len(red_times_html[0].contents):
+            return []
+
         red_times = [n.contents[0] for n in red_times_html]
 
         for i in range(len(red_times)):
@@ -334,7 +356,10 @@ def get_players_in_goals(id):
 
         return red_times
 
-    def get_red_card_names(red_html):
+    def get_red_card_names(red_html, red_times):
+
+        if not len(red_times):
+            return []
 
         details_names = [n.contents[0] for n in red_html]
 
@@ -424,6 +449,8 @@ def get_players_in_goals(id):
     if teams_temp is None:
         return None
     home_team, away_team = teams(id)
+    if html_to_players(players_html) is None:
+        return None
     home_players, away_players = html_to_players(players_html)
     home_goals_sorted, away_goals_sorted = goals(id)
     subs_times = get_subs_times(substitution_times_html)
@@ -437,7 +464,7 @@ def get_players_in_goals(id):
         red_names = [home_players[4], away_players[4]]
     else:
         red_times = get_red_card_times(red_times_html)
-        red_names = get_red_card_names(red_html)
+        red_names = get_red_card_names(red_html, red_times)
 
     players_time = time_per_player(
         home_players_played,
@@ -473,7 +500,8 @@ def get_players_data(games_id):
     total_players_goals = {}
     total_team_data = {}
     for game in games_id:
-        if game != 462905:
+        print(game)
+        if get_players_in_goals(game) is not None:
             player_data, team_time, team_goal_difference = get_players_in_goals(
                 game)
             for team in team_time.keys():
@@ -493,7 +521,6 @@ def get_players_data(games_id):
                     total_players_goals[player][3] += player_data[player][3]
                 else:
                     total_players_goals[player] = player_data[player]
-
     return total_players_goals, total_team_data
 
 
@@ -528,13 +555,14 @@ def dict_to_list(d):
 
     return dictlist
 
-
 # Program
+total_games = []
+competitions = ['liga', 'copa_lib', 'copa_sud']
+for comp in competitions:
+    games_id = get_games_id(2016, 2, 5, 2016, 9, 26, comp)
+    total_games += games_id
 
-games_id = get_games_id(2016, 2, 5, 2016, 9, 26)
-
-
-total_players_data, total_team_data = get_players_data(games_id)
+total_players_data, total_team_data = get_players_data(total_games)
 
 total_data = get_dict_with_minutes_in_bench(
     total_players_data, total_team_data)
@@ -575,6 +603,6 @@ total_data['ag_90m_team_goals'] = 90 * \
 
 total_data = total_data.fillna(0)
 
-path = 'player_in_goals_2016_9_19.csv'
+path = 'player_in_goals_2016_9_26.csv'.format(comp)
 
 total_data.to_csv(path, index=False)
