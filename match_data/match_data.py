@@ -1,3 +1,4 @@
+import os
 import csv
 
 from datetime import date, timedelta
@@ -14,15 +15,9 @@ def date_range(start_date, end_date):
         yield (start_date + timedelta(n)).strftime('%Y%m%d')
 
 
-def get_games_id(
-        start_date,
-        end_date):
+def get_games_id(start_date, end_date):
 
-    games_id = []
-    dates = []
-
-    for item in date_range(start_date, end_date):
-        dates.append(item)
+    dates = [d for d in date_range(start_date, end_date)]
 
     chrome_options = Options()
     chrome_options.add_argument('--dns-prefetch-disable')
@@ -33,25 +28,112 @@ def get_games_id(
             'http://www.espn.com.ar/futbol/resultados/_/liga/arg.1/fecha/' +
             day)
 
-        # game_link_driver = driver.find_elements_by_name(
-        # '&lpos=soccer:scoreboard:resumen')
         game_link_driver = driver.find_elements_by_class_name(
             'mobileScoreboardLink  ')
-        # print(game_link_driver)
+
         game_links = []
 
         for i in range(len(game_link_driver)):
             # print(game_link_driver[i].get_attribute('href'))
             game_links.append(game_link_driver[i].get_attribute('href'))
 
-        for game in game_links:
-            # print(game)
-            games_id.append(game[46:53])
+        games_id = [game[46:53] for game in game_links]
 
         driver.quit
 
-    print(games_id)
+    # print(games_id)
     return games_id
+
+
+def get_score(html):
+
+    if not len(html):
+        return None
+
+    contents = [p.contents[0] for p in html]
+    score_string = (contents[0].strip())
+
+    if not len(score_string):
+        return None
+
+    score = int(score_string)
+    return score
+
+
+def get_possesion_values(possession_html):
+
+    if not len(possession_html):
+        return None
+
+    for item in possession_html:
+        possession_data = item.find_all('span', {"class": "chartValue"})
+
+    pos_contents = [p.contents[0] for p in possession_data]
+
+    pos_percentage = [int(item[:-1]) for item in pos_contents]
+
+    return pos_percentage
+
+
+def get_teams(teams_html):
+
+    if not teams_html:
+        return None
+
+    for item in teams_html:
+        name = item.find_all('span', {"class": "team-name"})
+
+    team_names = [n.contents[0] for n in name]
+
+    for team in team_names:
+        if 'Atl Tucum' in team:
+            team = 'TUC'
+
+    return team_names
+
+
+def split_shots(shots):
+    shots = shots.split()
+    total_shots = int(shots[0])
+    sot = int(shots[1][1:-1])
+    return total_shots, sot
+
+
+def get_shots(shots_html):
+
+    if not len(shots_html):
+        return None
+
+    for item in shots_html:
+        shots_data = item.find_all('span', {"class": "number"})
+
+    shots_contents = [s.contents[0] for s in shots_data]
+
+    home_shots, home_sot = split_shots(shots_contents[0])
+    away_shots, away_sot = split_shots(shots_contents[1])
+
+    shots_total = [home_shots, away_shots]
+    shots_ongoal = [home_sot, away_sot]
+
+    return [shots_total, shots_ongoal]
+
+
+def get_fouls(fouls_html):
+
+    fouls_contents = [p.contents[0] for p in fouls_html]
+
+    fouls = [int(foul) for foul in fouls_contents]
+
+    return fouls
+
+
+def get_cards(cards_html):
+
+    cards_content = [p.contents[0] for p in cards_html]
+
+    cards = [int(i) for i in cards_content]
+
+    return cards
 
 
 def get_game_data(id):
@@ -72,123 +154,77 @@ def get_game_data(id):
     yellow_html = soup.find_all("td", {"data-stat": "yellowCards"})
     red_html = soup.find_all("td", {"data-stat": "redCards"})
 
-    def html_to_score(html):
-
-        if not len(html):
-            return None
-
-        contents = [p.contents[0] for p in html]
-
-        score_string = (contents[0].strip())
-
-        if not len(score_string):
-            return None
-
-        score = int(score_string)
-
-        return score
-
-    def get_possesion_values(possession_html):
-
-        if not len(possession_html):
-            return None
-
-        for item in possession_html:
-            possession_data = item.find_all('span', {"class": "chartValue"})
-
-        pos_contents = [p.contents[0] for p in possession_data]
-
-        possesion_percentage = []
-
-        for content in pos_contents:
-            percentage_num = int(content[:-1])
-            possesion_percentage.append(percentage_num)
-
-        return possesion_percentage
-
-    def teams(teams_html):
-
-        if not teams_html:
-            return None
-        for item in teams_html:
-            name = item.find_all('span', {"class": "team-name"})
-
-        team_names = [n.contents[0] for n in name]
-        home_team_raw = team_names[0]
-        away_team_raw = team_names[1]
-
-        if 'Atl Tucum' in home_team_raw:
-            home_team = 'TUC'
-        else:
-            home_team = home_team_raw
-
-        if 'Atl Tucum' in away_team_raw:
-            away_team = 'TUC'
-        else:
-            away_team = away_team_raw
-
-        return home_team, away_team
-
-    def get_shots(shots_html):
-
-        for item in shots_html:
-            shots_data = item.find_all('span', {"class": "number"})
-
-        shots_contents = [s.contents[0] for s in shots_data]
-
-        shots_home = shots_contents[0].split()
-        shots_away = shots_contents[1].split()
-
-        shots_home_nobrackets = shots_home[1][1:-1]
-        shots_away_nobrackets = shots_away[1][1:-1]
-
-        shots_home_num = [int(shots_home[0]), int(shots_home_nobrackets)]
-        shots_away_num = [int(shots_away[0]), int(shots_away_nobrackets)]
-
-        shots_total = [shots_home_num[0], shots_away_num[0]]
-        shots_ongoal = [shots_home_num[1], shots_away_num[1]]
-
-        return shots_total, shots_ongoal
-
-    def get_fouls(fouls_html):
-
-        fouls_contents = [p.contents[0] for p in fouls_html]
-
-        fouls = []
-
-        for foul in fouls_contents:
-            fouls_num = int(foul)
-            fouls.append(fouls_num)
-
-        return fouls
-
-    def get_cards(cards_html):
-
-        cards_content = [p.contents[0] for p in cards_html]
-
-        cards = []
-
-        for i in cards_content:
-            cards_num = int(i)
-            cards.append(cards_num)
-
-        return cards
-
-    home_goals = html_to_score(home_html)
-    away_goals = html_to_score(away_html)
-    possesion_percentage = get_possesion_values(possession_html)
-    home_team, away_team = teams(teams_html)
-    shots_total, shots_ongoal = get_shots(shots_html)
+    home_goals = get_score(home_html)
+    away_goals = get_score(away_html)
+    pos_percentage = get_possesion_values(possession_html)
+    teams = get_teams(teams_html)
+    shots = get_shots(shots_html)
     fouls = get_fouls(fouls_html)
     yellow = get_cards(yellow_html)
     red = get_cards(red_html)
 
-    game = [home_team, away_team, home_goals, away_goals,
-            shots_total[0], shots_total[1], shots_ongoal[0], shots_ongoal[1],
-            possesion_percentage[0], possesion_percentage[1],
-            fouls[0], fouls[1], yellow[0], yellow[1], red[0], red[1]]
+    if not teams or not pos_percentage:
+        return None
+
+    game = [
+        teams[0], teams[1], home_goals, away_goals, shots[0][0], shots[0][1],
+        shots[1][0], shots[1][1], pos_percentage[0], pos_percentage[1],
+        fouls[0], fouls[1], yellow[0], yellow[1], red[0], red[1]
+    ]
 
     return game
+
+
+def get_penalty_shooters(summary_html):
+
+    if not len(summary_html):
+        return None
+
+    s_contents = [p.contents[0] for p in summary_html]
+
+    if s_contents[0] == '\n':
+        return None
+
+    temp_contents = [i.strip() for i in s_contents]
+
+    penalty_contents = [i for i in temp_contents if 'penalty' in i.lower()]
+
+    shooters = []
+
+    for item in penalty_contents:
+        temp = item.split()
+        shooters.append(temp[0] + ' ' + temp[1])
+
+    return shooters
+
+
+def get_players(players_html):
+
+    if not len(players_html):
+        return None
+
+    pl_contents = [p.contents[0] for p in players_html]
+
+    pl_contents = [i.strip() for i in pl_contents if len(i.strip()) > 0]
+
+    home_players = [pl for pl in pl_contents[:18]]
+    away_players = [pl for pl in pl_contents[18:]]
+
+    return [home_players, away_players]
+
+
+def penalty_attribution(shooters, home_players, away_players):
+
+    home_penalties = 0
+    away_penalties = 0
+
+    for shooter in shooters:
+        if shooter in home_players:
+            home_penalties += 1
+        elif shooter in away_players:
+            away_penalties += 1
+
+    return home_penalties, away_penalties
 
 
 def get_penalties(id):
@@ -198,123 +234,74 @@ def get_penalties(id):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
 
-    resumen_html = soup.find_all("div", {"class": "detail"})
+    summary_html = soup.find_all("div", {"class": "detail"})
     players_html = soup.find_all("span", {"class": "name"})
 
-    def get_penalty_shooters(resumen_html):
+    shooters = get_penalty_shooters(summary_html)
+    players = get_players(players_html)
 
-        resumen_contents = [p.contents[0] for p in resumen_html]
+    if not players:
+        return None
 
-        if resumen_contents[0] == '\n':
-            return None
+    home_players, away_players = players
 
-        resumen_contents_strip = []
-
-        for item in resumen_contents:
-            strip = item.strip()
-            resumen_contents_strip.append(strip)
-
-        penalty_contents = []
-
-        for item in resumen_contents_strip:
-            if 'Penalty' in item:
-                penalty_contents.append(item)
-
-        shooters = []
-
-        for i in range(len(penalty_contents)):
-            inter = penalty_contents[i].split()
-            shooters.append(inter[0] + ' ' + inter[1])
-
-        return shooters
-
-    def html_to_players(html):
-
-        if not len(html):
-            return None
-
-        players_contents = [p.contents[0] for p in html]
-
-        home_players = []
-        away_players = []
-
-        for num in range(18):
-            home_players.append(players_contents[num].strip())
-        for number in range(18, len(players_contents)):
-            away_players.append(players_contents[number].strip())
-
-        return home_players, away_players
-
-    def penalty_attribution(shooters, home_players, away_players):
-
-        home_penalties = 0
-        away_penalties = 0
-
-        for shooter in shooters:
-            if shooter in home_players:
-                home_penalties += 1
-            elif shooter in away_players:
-                away_penalties += 1
-
-        return home_penalties, away_penalties
-
-    shooters = get_penalty_shooters(resumen_html)
-    home_players, away_players = html_to_players(players_html)
     home_penalties, away_penalties = penalty_attribution(
         shooters, home_players, away_players)
 
-    return home_penalties, away_penalties
+    return [home_penalties, away_penalties]
 
 
-def write_to_csv(games):
+def write_to_csv(games, csv_file):
     writer = csv.writer(csv_file)
     writer.writerows(games)
 
 
-def get_match_data(games_id):
+def run_game_data(games_id):
     list_of_games_data = []
 
     for game in games_id:
         game_data = get_game_data(game)
-        home_penalties, away_penalties = get_penalties(game)
-        game_data.append(home_penalties)
-        game_data.append(away_penalties)
+        hp = 0
+        ap = 0
+        penalties = get_penalties(game)
+        if penalties:
+            hp = penalties[0]
+            ap = penalties[1]
+            game_data.append(hp)
+            game_data.append(ap)
         if game_data:
             list_of_games_data.append(game_data)
 
     return list_of_games_data
 
-# Program
 
-start_date = date(2016, 8, 26)
-end_date = date(2016, 12, 20)
-# end_date = date(2016, 8, 31)
-games_id = get_games_id(start_date, end_date)
+def main(start_date, end_date, row_names):
 
-list_of_games_data = get_match_data(games_id)
+    games_id = get_games_id(start_date, end_date)
+    list_of_games_data = run_game_data(games_id)
 
-row_names = [
-    'home_name',
-    'away_name',
-    'home_goals',
-    'away_goals',
-    'home_totalshots',
-    'away_totalshots',
-    'home_shotsgoal',
-    'away_shotsgoal',
-    'home_possession',
-    'away_possession',
-    'home_fouls',
-    'away_fouls',
-    'home_yellow',
-    'away_yellow',
-    'home_red',
-    'away_red',
-    'home_penalties',
-    'away_penalties']
+    os.makedirs('data', exist_ok=True)
+    with open('games_data_{}_{}.csv'.format(start_date, end_date),
+              'w') as csv_file:
+        write_to_csv([row_names], csv_file)
 
-with open('games_data_{0}_{1}.csv'.format(start_date, end_date), 'w') as csv_file:
-    write_to_csv([row_names])
+        for game in list_of_games_data:
+            write_to_csv([game, csv_file])
 
-    for game in list_of_games_data:
-        write_to_csv([game])
+
+if __name__ == '__main__':
+
+    # get_game_data()
+
+    start_date = date(2017, 5, 7)
+    end_date = date(2017, 5, 8)
+
+    row_names = [
+        'home_name', 'away_name', 'home_goals', 'away_goals',
+        'home_totalshots', 'away_totalshots', 'home_shotsgoal',
+        'away_shotsgoal', 'home_possession', 'away_possession', 'home_fouls',
+        'away_fouls', 'home_yellow', 'away_yellow', 'home_red', 'away_red',
+        'home_penalties', 'away_penalties'
+    ]
+
+    main(start_date, end_date, row_names)
