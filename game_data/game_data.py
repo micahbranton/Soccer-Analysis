@@ -15,8 +15,8 @@ competitions = {
     'copa_libertadores': 'conmebol.libertadores',
     'copa_sudamericana': 'conmebol.sudamericana',
     'recopa_sudamericana': 'conmebol.recopa',
-    'mundial': 'fifa.world',
-    'copa_confederaciones': 'fifa.confederations',
+    'world_cup': 'fifa.world',
+    'confederations_cup': 'fifa.confederations',
     'europa_league': 'uefa.europa',
     'champions_league': 'uefa.champions',
     'all': 'todo'
