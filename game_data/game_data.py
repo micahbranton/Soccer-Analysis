@@ -9,13 +9,26 @@ from bs4 import BeautifulSoup
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 
+competitions = {
+    'primera_division': 'arg.1',
+    'copa_argentina': 'arg.copa',
+    'copa_libertadores': 'conmebol.libertadores',
+    'copa_sudamericana': 'conmebol.sudamericana',
+    'recopa_sudamericana': 'conmebol.recopa',
+    'mundial': 'fifa.world',
+    'copa_confederaciones': 'fifa.confederations',
+    'europa_league': 'uefa.europa',
+    'champions_league': 'uefa.champions',
+    'all': 'todo'
+}
+
 
 def date_range(start_date, end_date):
     for n in range((end_date - start_date).days):
         yield (start_date + timedelta(n)).strftime('%Y%m%d')
 
 
-def get_games_id(start_date, end_date):
+def get_games_id(start_date, end_date, comp):
 
     dates = [d for d in date_range(start_date, end_date)]
 
@@ -25,8 +38,8 @@ def get_games_id(start_date, end_date):
 
     for day in dates:
         driver.get(
-            'http://www.espn.com.ar/futbol/resultados/_/liga/arg.1/fecha/' +
-            day)
+            'http://www.espn.com.ar/futbol/resultados/_/liga/{}/fecha/{}'.
+            format(comp, day))
 
         game_link_driver = driver.find_elements_by_class_name(
             'mobileScoreboardLink  ')
@@ -34,10 +47,9 @@ def get_games_id(start_date, end_date):
         game_links = []
 
         for i in range(len(game_link_driver)):
-            # print(game_link_driver[i].get_attribute('href'))
             game_links.append(game_link_driver[i].get_attribute('href'))
 
-        games_id = [game[46:53] for game in game_links]
+        games_id = [(game[46:53], day) for game in game_links]
 
         driver.quit
 
@@ -381,7 +393,7 @@ def get_game_goals(id):
     return home_goals, away_goals
 
 
-def get_game_data(id, two_zero_minutes=200):
+def get_game_data(id, day, two_zero_minutes=200):
 
     print(id)
 
@@ -428,10 +440,10 @@ def get_game_data(id, two_zero_minutes=200):
         two_zero = teams[1]
 
     game = [
-        teams[0], teams[1], home_goals, away_goals, shots[0][0], shots[0][1],
-        shots[1][0], shots[1][1], pos_percentage[0], pos_percentage[1],
-        fouls[0], fouls[1], yellow[0], yellow[1], red[0], red[1], first_goal,
-        two_zero
+        id, day, teams[0], teams[1], home_goals, away_goals, shots[0][0],
+        shots[0][1], shots[1][0], shots[1][1], pos_percentage[0],
+        pos_percentage[1], fouls[0], fouls[1], yellow[0], yellow[1], red[0],
+        red[1], first_goal, two_zero
     ]
 
     return game
@@ -458,8 +470,8 @@ def get_away_points(df):
 def run_game_data(games_id):
     list_of_games_data = []
 
-    for game in games_id:
-        game_data = get_game_data(game)
+    for game, day in games_id:
+        game_data = get_game_data(game, day)
         hp = 0
         ap = 0
         penalties = get_penalties(game)
@@ -474,16 +486,17 @@ def run_game_data(games_id):
     return list_of_games_data
 
 
-def main(start_date, end_date):
+def main(start_date, end_date, competition, competitions):
 
-    games_id = get_games_id(start_date, end_date)
+    comp = competitions[competition]
+    games_id = get_games_id(start_date, end_date, comp)
     list_of_games_data = run_game_data(games_id)
 
     df = pd.DataFrame(list_of_games_data)
 
     cols = [
-        'home_name', 'away_name', 'home_goals', 'away_goals',
-        'home_totalshots', 'away_totalshots', 'home_shotsgoal',
+        'game_id', 'date', 'home_name', 'away_name', 'home_goals',
+        'away_goals', 'home_totalshots', 'away_totalshots', 'home_shotsgoal',
         'away_shotsgoal', 'home_possession', 'away_possession', 'home_fouls',
         'away_fouls', 'home_yellow', 'away_yellow', 'home_red', 'away_red',
         'first_goal', 'two_zero', 'home_penalties', 'away_penalties'
@@ -492,7 +505,13 @@ def main(start_date, end_date):
 
     df['home_points'] = df.apply(get_home_points, axis=1)
     df['away_points'] = df.apply(get_away_points, axis=1)
+    df['competition'] = competition
 
+    print(df)
+
+    import sys
+
+    sys.exit()
     os.makedirs('data', exist_ok=True)
 
     file_name = 'data/games_data_{}_{}.csv'.format(start_date, end_date)
@@ -505,4 +524,4 @@ if __name__ == '__main__':
     start_date = date(2017, 5, 7)
     end_date = date(2017, 5, 8)
 
-    main(start_date, end_date)
+    main(start_date, end_date, 'primera_division', competitions)
