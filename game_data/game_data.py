@@ -19,7 +19,6 @@ competitions = {
     'confederations_cup': 'fifa.confederations',
     'europa_league': 'uefa.europa',
     'champions_league': 'uefa.champions',
-    'all': 'todo'
 }
 
 
