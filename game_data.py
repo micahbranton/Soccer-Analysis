@@ -506,14 +506,10 @@ def main(start_date, end_date, competition, competitions):
     df['away_points'] = df.apply(get_away_points, axis=1)
     df['competition'] = competition
 
-    print(df)
+    path = 'data/game_data'
+    os.makedirs(path, exist_ok=True)
 
-    import sys
-
-    sys.exit()
-    os.makedirs('data', exist_ok=True)
-
-    file_name = 'data/games_data_{}_{}.csv'.format(start_date, end_date)
+    file_name = '{}/games_data_{}_{}.csv'.format(path, start_date, end_date)
 
     df.to_csv(file_name, index=False)
 
@@ -522,5 +518,6 @@ if __name__ == '__main__':
 
     start_date = date(2017, 5, 7)
     end_date = date(2017, 5, 8)
+    competition = 'primera_division'
 
-    main(start_date, end_date, 'primera_division', competitions)
+    main(start_date, end_date, competition, competitions)
