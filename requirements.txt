@@ -1,5 +1,7 @@
 numpy
 pandas
+ipython
+jupyter
 matplotlib
 selenium
 beautifulsoup4
