@@ -2,12 +2,14 @@
 #          File: graphs.py
 #        Author: Andre Brener
 #       Created: 31 Jan 2017
-# Last Modified: 12 May 2017
+# Last Modified: 13 May 2017
 #   Description: description
 # =============================================================================
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+plt.style.use('fivethirtyeight')
 
 df = pd.read_csv('slo_data.csv')
 
@@ -55,7 +57,7 @@ for col in df.columns:
                 player_colors.append('orangered')
             else:
                 player_colors.append('deepskyblue')
-        plt.style.use('fivethirtyeight')
+
         first_player = list(players)[0]
         title = '{0} {1}'.format(first_player, stats_dict[col][0])
         # title = 'Bergessio fue el segundo con mejor promedio de asistencias del equipo'
