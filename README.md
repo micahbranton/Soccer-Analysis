@@ -45,3 +45,9 @@ Go in the directory of the repo and run:
   - Minutes on and off the pitch.
   - Total team goals for and against.
   - Team goals for and against with the player in the pitch.
+  
+  ### 3. Team Analysis
+- Have the csv in the same directory. The script will assume the same format as the csv that resulted from running `game_data.py`. By running [season_analysis.py](https://github.com/andrebrener/football_data/blob/master/season_analysis.py), you will get a series un graphs comparing teams in different aspects of the game. The options for these graphs are:
+- Change titles and subtitles of graphs.
+- Define a team that you want to be remarked from the rest.
+- The maximum number of teams in the graph.
