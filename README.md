@@ -46,8 +46,8 @@ Go in the directory of the repo and run:
   - Total team goals for and against.
   - Team goals for and against with the player in the pitch.
   
-  ### 3. Team & Player Analysis
-The[season_analysis.py](https://github.com/andrebrener/football_data/blob/master/season_analysis.py) script is used to compare teams and [team_players_comparison.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/compare_team_players/team_players_comparison.py) compares the players. After running the scripts, you will get a series un graphs with their comparison in different aspects of the game. The options for these graphs are:
+ ### 3. Team & Player Analysis
+The [season_analysis.py](https://github.com/andrebrener/football_data/blob/master/season_analysis.py) script is used to compare teams and [team_players_comparison.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/compare_team_players/team_players_comparison.py) compares the players. After running the scripts, you will get a series un graphs with their comparison in different aspects of the game. The options for these graphs are:
 - Change titles and subtitles of graphs.
 - Define a team/player that you want to be remarked from the rest.
 - The maximum number of teams/players in the graph.
