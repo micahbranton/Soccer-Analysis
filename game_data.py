@@ -1,25 +1,14 @@
 import os
 
-from datetime import date, timedelta
+from datetime import timedelta
 
 import requests
 import pandas as pd
 
 from bs4 import BeautifulSoup
+from constants import COMPETITION, COMPETITION_DICT, END_DATE, START_DATE
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
-
-competitions = {
-    'primera_division': 'arg.1',
-    'copa_argentina': 'arg.copa',
-    'copa_libertadores': 'conmebol.libertadores',
-    'copa_sudamericana': 'conmebol.sudamericana',
-    'recopa_sudamericana': 'conmebol.recopa',
-    'world_cup': 'fifa.world',
-    'confederations_cup': 'fifa.confederations',
-    'europa_league': 'uefa.europa',
-    'champions_league': 'uefa.champions',
-}
 
 
 def date_range(start_date, end_date):
@@ -516,8 +505,6 @@ def main(start_date, end_date, competition, competitions):
 
 if __name__ == '__main__':
 
-    start_date = date(2017, 5, 7)
-    end_date = date(2017, 5, 8)
     competition = 'primera_division'
 
-    main(start_date, end_date, competition, competitions)
+    main(START_DATE, END_DATE, COMPETITION, COMPETITION_DICT)

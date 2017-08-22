@@ -1,13 +1,11 @@
 import os
 
-from datetime import date
-
 import requests
 import pandas as pd
 
 from bs4 import BeautifulSoup
-from game_data import (competitions, get_game_goals, get_games_id, get_players,
-                       get_teams)
+from constants import COMPETITION, COMPETITION_DICT, END_DATE, START_DATE
+from game_data import get_game_goals, get_games_id, get_players, get_teams
 
 
 def get_team_names(id):
@@ -308,7 +306,6 @@ def dict_to_list(d):
 
 def get_calculations(df):
 
-    
     df['team_goals'] = df['team_goals_for'] - df['goals_for']
     df['ag_team_goals'] = df['team_goals_against'] - df['goals_against']
 
@@ -340,10 +337,10 @@ def main(start_date, end_date, competition, competitions):
 
     cols = [
         'player', 'team', 'goals_for', 'goals_against', 'minutes_played',
-        'minutes_benched', 'team_goals_for', 'team_goals_against']
+        'minutes_benched', 'team_goals_for', 'team_goals_against'
+    ]
 
     df = pd.DataFrame(players_data, columns=cols)
-
 
     final_df = get_calculations(df)
 
@@ -356,8 +353,4 @@ def main(start_date, end_date, competition, competitions):
 
 if __name__ == '__main__':
 
-    start_date = date(2017, 5, 7)
-    end_date = date(2017, 5, 8)
-    competition = 'primera_division'
-
-    main(start_date, end_date, competition, competitions)
+    main(START_DATE, END_DATE, COMPETITION, COMPETITION_DICT)
