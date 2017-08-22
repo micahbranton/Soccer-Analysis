@@ -34,7 +34,7 @@ Go in the directory of the repo and run:
   - Team that was 2-0 in any moment of the game. This value is null if no team complies with this condition.
   - Number of penalties per team.
   
-### 2. Get Players analysis on & off the Pitch
+### 2. Get Analysis for Player when on & off the Pitch
 - Insert Constants in constants.py.
   - Select start & end dates.
   - Select competition from the competition dictionary.
