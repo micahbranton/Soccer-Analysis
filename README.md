@@ -24,12 +24,12 @@ Go in the directory of the repo and run:
 - Run [game_data.py](https://github.com/andrebrener/football_data/blob/master/game_data.py).
 - A directory named `game_data` will be created in the repo with a csv file named `games_data_<start_date>_<end_date>.csv`.
 - This csv will contain the data for the games of the selected competition and dates including:
-  - Game Date.
+  - Date of the game.
   - Home & away teams.
-  - Game Result.
+  - Result of the game.
   - Total shots and shots on goal.
   - Percentage ball possessions.
   - Fouls and yellow & red cards.
   - Team who made the first goal.
   - Team that was 2-0 in any moment of the game. This value is null if no team complies with this condition.
-  - Number of Penalties per team.
+  - Number of penalties per team.
