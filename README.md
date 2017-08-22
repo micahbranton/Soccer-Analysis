@@ -52,7 +52,7 @@ The [season_analysis.py](https://github.com/andrebrener/football_data/blob/maste
 - Define a team/player that you want to be remarked from the rest.
 - The maximum number of teams/players in the graph.
 
-PHOTO
+![img](http://i.imgur.com/qaJvp8r.png)
 
 ### 4. Passes Map
   This graph shows the average location of the players and the pass distribution of the team during the game. By running [passes_map.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/passes_map.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/river_valle.csv).
