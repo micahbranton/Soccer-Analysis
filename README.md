@@ -26,10 +26,10 @@ Go in the directory of the repo and run:
 - This csv will contain the data for the games of the selected competition and dates including:
   - Game Date.
   - Home & away teams.
-  - Result
+  - Game Result.
   - Total shots and shots on goal.
   - Percentage ball possessions.
   - Fouls and yellow & red cards.
   - Team who made the first goal.
-  - If one team was 2-0 along the game.
-  - Penalties
+  - Team that was 2-0 in any moment of the game. This value is null no team complies with this condition.
+  - Number of Penalties per team.
