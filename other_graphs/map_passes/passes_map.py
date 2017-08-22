@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn
 import pandas as pd
 
-table = pd.read_csv('arg1.csv', sep= ';', index_col = 0)
+plt.style.use('fivethirtyeight')
+
+table = pd.read_csv('river_valle.csv', sep= ';', index_col = 0)
 
 players = table['nombre_apellido'].tolist()
 x = table['y_promedio'].tolist()
@@ -59,20 +60,19 @@ for player in players:
     if player in ['Kranevitter', 'Lamela', 'Aguero']:
         colors.append('navy')
     else:
-        colors.append('skyblue')
+        colors.append('red')
 
 fig, ax = plt.subplots(figsize=(9,9))
-ax.scatter(x, y, s = touches, color='skyblue')
+ax.scatter(x, y, s = touches, color='red')
 ax.set_axis_bgcolor('0.97')
 get_football_field(x_boundaries, y_boundaries, x_small_area, x_big_area,
                         y_small_area, y_big_area)
-ax.annotate('1era Fecha Copa América Centenario 2016', xy=(0, 115), size = 13, ha="center", weight='bold')
-ax.annotate('Líneas: pases. Grosor indica cantidad de pases', xy=(0, 89), size = 10, ha="center", color='0.3')
-ax.annotate('Tamaño del Círculo: pases totales completados', xy=(0, 86), size = 10, ha="center", color='0.3')
-ax.annotate('Posición del Círculo: posición promedio', xy=(0, 83), size = 10, ha="center", color='0.3')
-ax.annotate('Líneas para 5+ passes', xy=(0, 80), size = 10, ha="center", color='0.3')
-ax.annotate('Solamente jugadores titulares', xy=(0, 77), size = 10, ha="center", color='0.3')
-plt.title('Argentina vs Chile', fontsize=16, weight='bold')
+ax.annotate('Líneas: pases. Grosor indica cantidad de pases', xy=(-15, 89), size = 10, ha="center", color='0.3')
+ax.annotate('Tamaño del Círculo: pases totales completados', xy=(-15, 86), size = 10, ha="center", color='0.3')
+ax.annotate('Posición del Círculo: posición promedio', xy=(-15, 83), size = 10, ha="center", color='0.3')
+ax.annotate('Líneas para 5+ passes', xy=(-15, 80), size = 10, ha="center", color='0.3')
+ax.annotate('Solamente jugadores titulares', xy=(-15, 77), size = 10, ha="center", color='0.3')
+plt.title('River Plate vs Independiente del Valle', fontsize=16, weight='bold')
 for i, player in enumerate(players):
     ax.annotate(player, xy=(x[i], y[i]), xytext=(x[i], y[i]-5.5), size = 13, ha="center")
     for n in range(len(players)):
