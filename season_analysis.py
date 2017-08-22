@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 df = pd.read_csv('games_data_2016-08-26_2016-12-20.csv')
 
 # print(df.columns)
-df = df.rename(columns={'away_possesion': 'away_possession'})
 
 df['game_count'] = 1
 
