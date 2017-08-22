@@ -1,4 +1,4 @@
-# Games Data
+# Football Analytics
 
 Get information from football games for different competitions and other graphs to analyze teams & players. The scripts are written and intended to use with Python 3.
 
