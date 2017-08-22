@@ -57,7 +57,7 @@ The [season_analysis.py](https://github.com/andrebrener/football_data/blob/maste
 ### 4. Passes Map
   This graph shows the average location of the players and the pass distribution of the team during the game. By running [passes_map.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/passes_map.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/river_valle.csv).
   
-  PHOTO
+![img](http://i.imgur.com/6NuthFi.png)
   
 ### 5. Players Under or Overperforming
  This graph shows if the player was over or underperforming compared to what he was expected to. By running [over_under_perform.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/performance_vs_xg/over_under_perform.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/other_graphs/performance_vs_xg/rodrigo_mora_xg.csv).
@@ -67,6 +67,6 @@ The [season_analysis.py](https://github.com/andrebrener/football_data/blob/maste
 ### 5. Radars
 This graph compares teams/players in many aspects of the game at the same time. By running [radars_graph.py](https://github.com/andrebrener/football_data/blob/master/radars/radars_graph.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/radars/players_data_2016.csv).
 
-PHOTO
+![img](http://i.imgur.com/Wr5ofJt.png)
 
 
