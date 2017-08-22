@@ -28,7 +28,7 @@ Go in the directory of the repo and run:
   - Home & away teams.
   - Result
   - Total shots and shots on goal.
-  - Team possessions.
+  - Percentage ball possessions.
   - Fouls and yellow & red cards.
   - Team who made the first goal.
   - If one team was 2-0 along the game.
