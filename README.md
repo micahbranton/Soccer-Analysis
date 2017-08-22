@@ -31,5 +31,5 @@ Go in the directory of the repo and run:
   - Percentage ball possessions.
   - Fouls and yellow & red cards.
   - Team who made the first goal.
-  - Team that was 2-0 in any moment of the game. This value is null no team complies with this condition.
+  - Team that was 2-0 in any moment of the game. This value is null if no team complies with this condition.
   - Number of Penalties per team.
