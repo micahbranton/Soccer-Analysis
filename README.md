@@ -46,8 +46,27 @@ Go in the directory of the repo and run:
   - Total team goals for and against.
   - Team goals for and against with the player in the pitch.
   
-  ### 3. Team Analysis
-- Have the csv in the same directory. The script will assume the same format as the csv that resulted from running `game_data.py`. By running [season_analysis.py](https://github.com/andrebrener/football_data/blob/master/season_analysis.py), you will get a series un graphs comparing teams in different aspects of the game. The options for these graphs are:
+  ### 3. Team & Player Analysis
+The[season_analysis.py](https://github.com/andrebrener/football_data/blob/master/season_analysis.py) script is used to compare teams and [team_players_comparison.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/compare_team_players/team_players_comparison.py) compares the players. After running the scripts, you will get a series un graphs with their comparison in different aspects of the game. The options for these graphs are:
 - Change titles and subtitles of graphs.
-- Define a team that you want to be remarked from the rest.
-- The maximum number of teams in the graph.
+- Define a team/player that you want to be remarked from the rest.
+- The maximum number of teams/players in the graph.
+
+PHOTO
+
+### 4. Passes Map
+  This graph shows the average location of the players and the pass distribution of the team during the game. By running [passes_map.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/passes_map.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/river_valle.csv).
+  
+  PHOTO
+  
+### 5. Players Under or Overperforming
+ This graph shows if the player was over or underperforming compared to what he was expected to. By running [over_under_perform.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/performance_vs_xg/over_under_perform.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/other_graphs/performance_vs_xg/rodrigo_mora_xg.csv).
+  
+ PHOTO
+ 
+### 5. Radars
+This graph compares teams/players in many aspects of the game at the same time. By running [radars_graph.py](https://github.com/andrebrener/football_data/blob/master/radars/radars_graph.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/radars/players_data_2016.csv).
+
+PHOTO
+
+
