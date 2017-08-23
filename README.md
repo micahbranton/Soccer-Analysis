@@ -1,6 +1,6 @@
 # Football Analytics
 
-Get information from football games for different competitions and leverage data visualization to statistically analyze teams & players. The scripts are written and intended to use with Python 3.
+Get information from football games for different competitions and leverage data visualization to statistically analyze and visualize the performance of football teams and players. The scripts are written and intended to use with Python 3.
 
 ## Getting Started
 
