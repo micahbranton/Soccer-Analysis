@@ -35,17 +35,17 @@ Go in the directory of the repo and run:
   - Number of penalties per team.
   
  ### 2. Passes Map
-  This graph shows the average location of the players and the pass distribution of the team during the game. By running [passes_map.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/passes_map.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/river_valle.csv).
+  This graph shows the average location of the players and the pass distribution of the team during the game. To be able to run [passes_map.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/passes_map.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/other_graphs/map_passes/river_valle.csv).
   
 ![img](http://i.imgur.com/6NuthFi.png)
 
 ### 3. Radars
-This graph compares teams/players in many aspects of the game at the same time. By running [radars_graph.py](https://github.com/andrebrener/football_data/blob/master/radars/radars_graph.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/radars/players_data_2016.csv).
+This graph compares teams/players in many aspects of the game at the same time. To be able to run [radars_graph.py](https://github.com/andrebrener/football_data/blob/master/radars/radars_graph.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/radars/players_data_2016.csv).
 
 ![img](http://i.imgur.com/Wr5ofJt.png)
 
 ### 4. Players Under or Overperforming
- This graph shows if the player was over or underperforming compared to what he was expected to. By running [over_under_perform.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/performance_vs_xg/over_under_perform.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/other_graphs/performance_vs_xg/rodrigo_mora_xg.csv).
+ This graph shows if the player was over or underperforming compared to what he was expected to. To be able to run [over_under_perform.py](https://github.com/andrebrener/football_data/blob/master/other_graphs/performance_vs_xg/over_under_perform.py), the csv must be in the format as [this one](https://github.com/andrebrener/football_data/blob/master/other_graphs/performance_vs_xg/rodrigo_mora_xg.csv).
   
 ![img](http://i.imgur.com/T8EZ6nl.png)
 
