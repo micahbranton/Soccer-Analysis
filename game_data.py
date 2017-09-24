@@ -33,8 +33,6 @@ def get_games_id(comp):
         game_link_driver = driver.find_elements_by_class_name(
             'mobileScoreboardLink  ')
 
-        game_links = []
-
         for i in range(len(game_link_driver)):
             game_id = game_link_driver[i].get_attribute('href')[46:53]
             games_id.append((game_id, day))
@@ -63,7 +61,7 @@ def get_score(html):
 def get_possesion_values(possession_html):
 
     if not len(possession_html):
-        return None
+        return [0, 0]
 
     for item in possession_html:
         possession_data = item.find_all('span', {"class": "chartValue"})
@@ -80,14 +78,7 @@ def get_teams(teams_html):
     if not teams_html:
         return None
 
-    for item in teams_html:
-        name = item.find_all('span', {"class": "team-name"})
-
-    team_names = [n.contents[0] for n in name]
-
-    for team in team_names:
-        if 'Atl Tucum' in team:
-            team = 'TUC'
+    team_names = [tag.text.strip() for tag in teams_html]
 
     return team_names
 
@@ -393,7 +384,7 @@ def get_game_data(id, day, two_zero_minutes=200):
     home_html = soup.find_all("span", {"class": "score icon-font-after"})
     away_html = soup.find_all("span", {"class": "score icon-font-before"})
     possession_html = soup.find_all("div", {"class": "possession"})
-    teams_html = soup.find_all("div", {"class": "possession"})
+    teams_html = soup.find_all("span", {"class": "abbrev"})
     shots_html = soup.find_all("div", {"class": "shots"})
     fouls_html = soup.find_all("td", {"data-stat": "foulsCommitted"})
     yellow_html = soup.find_all("td", {"data-stat": "yellowCards"})
@@ -409,7 +400,7 @@ def get_game_data(id, day, two_zero_minutes=200):
     red = get_cards(red_html)
     goal_minutes = get_game_goals(id)
 
-    if not teams or not pos_percentage:
+    if not teams or not shots:
         return None
 
     first_goal = first_goal_team(goal_minutes[0], goal_minutes[1])
@@ -460,6 +451,8 @@ def run_game_data(games_id):
 
     for game, day in games_id:
         game_data = get_game_data(game, day)
+        if not game_data:
+            continue
         hp = 0
         ap = 0
         penalties = get_penalties(game)
@@ -478,9 +471,6 @@ def main():
 
     comp = COMPETITION_DICT[COMPETITION]
     games_id = get_games_id(comp)
-    print(games_id)
-    import sys
-    sys.exit()
     list_of_games_data = run_game_data(games_id)
 
     df = pd.DataFrame(list_of_games_data)
