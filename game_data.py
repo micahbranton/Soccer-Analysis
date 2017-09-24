@@ -16,9 +16,10 @@ def date_range(start_date, end_date):
         yield (start_date + timedelta(n)).strftime('%Y%m%d')
 
 
-def get_games_id(start_date, end_date, comp):
+def get_games_id(comp):
 
-    dates = [d for d in date_range(start_date, end_date)]
+    dates = [d for d in date_range(START_DATE, END_DATE)]
+    games_id = []
 
     chrome_options = Options()
     chrome_options.add_argument('--dns-prefetch-disable')
@@ -35,9 +36,8 @@ def get_games_id(start_date, end_date, comp):
         game_links = []
 
         for i in range(len(game_link_driver)):
-            game_links.append(game_link_driver[i].get_attribute('href'))
-
-        games_id = [(game[46:53], day) for game in game_links]
+            game_id = game_link_driver[i].get_attribute('href')[46:53]
+            games_id.append((game_id, day))
 
         driver.quit
 
@@ -474,10 +474,13 @@ def run_game_data(games_id):
     return list_of_games_data
 
 
-def main(start_date, end_date, competition, competitions):
+def main():
 
-    comp = competitions[competition]
-    games_id = get_games_id(start_date, end_date, comp)
+    comp = COMPETITION_DICT[COMPETITION]
+    games_id = get_games_id(comp)
+    print(games_id)
+    import sys
+    sys.exit()
     list_of_games_data = run_game_data(games_id)
 
     df = pd.DataFrame(list_of_games_data)
@@ -498,7 +501,7 @@ def main(start_date, end_date, competition, competitions):
     path = 'data/game_data'
     os.makedirs(path, exist_ok=True)
 
-    file_name = '{}/games_data_{}_{}.csv'.format(path, start_date, end_date)
+    file_name = '{}/games_data_{}_{}.csv'.format(path, START_DATE, END_DATE)
 
     df.to_csv(file_name, index=False)
 
@@ -507,4 +510,4 @@ if __name__ == '__main__':
 
     competition = 'primera_division'
 
-    main(START_DATE, END_DATE, COMPETITION, COMPETITION_DICT)
+    main()
