@@ -2,12 +2,14 @@
 #          File: season_analysis.py
 #        Author: Andre Brener
 #       Created: 21 Dec 2016
-# Last Modified: 10 May 2017
+# Last Modified: 29 Sep 2017
 #   Description: description
 # =============================================================================
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+plt.style.use('fivethirtyeight')
 
 df = pd.read_csv('games_data_2016-08-26_2016-12-20.csv')
 
@@ -191,7 +193,7 @@ for col in shot_stats.columns:
                 team_colors.append('orangered')
             else:
                 team_colors.append('deepskyblue')
-        plt.style.use('fivethirtyeight')
+
         first_team = team_dict[list(df['team_name'])[0]]
         title = '{0} {1}'.format(first_team, stats_dict[col][0])
         # title = 'Boca es de los equipos que más tiros recibe'

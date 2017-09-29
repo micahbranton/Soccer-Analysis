@@ -2,7 +2,7 @@
 #          File: constants.py
 #        Author: Andre Brener
 #       Created: 22 Aug 2017
-# Last Modified: 24 Sep 2017
+# Last Modified: 29 Sep 2017
 #   Description: description
 # =============================================================================
 from datetime import date
@@ -21,5 +21,5 @@ COMPETITION_DICT = {
 
 COMPETITION = 'primera_division'
 
-START_DATE = date(2017, 3, 9)
-END_DATE = date(2017, 6, 27)
+START_DATE = date(2017, 8, 27)
+END_DATE = date(2017, 9, 28)
