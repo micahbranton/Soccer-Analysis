@@ -77,6 +77,8 @@ def get_calculations(data_dir):
     total_df['against_penalties_per_game'] = total_df[
         'against_total_penalties'] / total_df['total_games']
 
+    total_df = total_df[total_df['total_games'] > 5]
+
     df_dict = {}
     for ag in ['against', 'for']:
         col = '{}_penalties_per_game'.format(ag)
@@ -109,7 +111,7 @@ def get_graph(df_dict, teams_in_graph, team_dict):
             x,
             team_names,
             color='0.3',
-            fontsize=16,
+            fontsize=13,
             # rotation='vertical'
         )
         sub_title = 'Penales {} por partido'.format(title_term)
@@ -172,4 +174,4 @@ if __name__ == '__main__':
     }
 
     df_dict = get_calculations(data_dir)
-    get_graph(df_dict, 5, team_dict)
+    get_graph(df_dict, 8, team_dict)

@@ -8,10 +8,11 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 plt.style.use('fivethirtyeight')
 
-df = pd.read_csv('games_data_2016-08-26_2016-12-20.csv')
+df = pd.read_csv(os.path.join('data', 'game_data', 'games_data_2016-08-26_2016-12-19.csv'))
 
 # print(df.columns)
 

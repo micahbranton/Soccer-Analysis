@@ -33,7 +33,6 @@ def get_games_id(comp):
         game_link_driver = driver.find_elements_by_class_name(
             'mobileScoreboardLink  ')
 
-        print(game_link_driver)
         for game_driver in game_link_driver:
             game_id = game_driver.get_attribute('href')[46:53]
             games_id.append((game_id, day))
