@@ -494,6 +494,7 @@ def main():
     file_name = '{}/games_data_{}_{}.csv'.format(path, START_DATE, END_DATE)
 
     df.to_csv(file_name, index=False)
+    print("File saved to {}".format(file_name))
 
 
 if __name__ == '__main__':

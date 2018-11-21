@@ -25,6 +25,7 @@ for row in table.iterrows():
         temp.append(data[n])
     passes[player] = temp
 
+
 x_boundaries = [-35, 35]
 y_boundaries = [0, 110]
 x_small_area = [-8, 8]
@@ -64,7 +65,7 @@ for player in players:
 
 fig, ax = plt.subplots(figsize=(9,9))
 ax.scatter(x, y, s = touches, color='red')
-ax.set_axis_bgcolor('0.97')
+# ax.set_axis_bgcolor('0.97')
 get_football_field(x_boundaries, y_boundaries, x_small_area, x_big_area,
                         y_small_area, y_big_area)
 ax.annotate('Líneas: pases. Grosor indica cantidad de pases', xy=(-15, 89), size = 10, ha="center", color='0.3')
