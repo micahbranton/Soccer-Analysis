@@ -6,9 +6,10 @@ import requests
 import pandas as pd
 
 from bs4 import BeautifulSoup
-from constants import COMPETITION, COMPETITION_DICT, END_DATE, START_DATE
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
+
+from constants import COMPETITION, COMPETITION_DICT, END_DATE, START_DATE
 
 
 def date_range(start_date, end_date):
@@ -28,10 +29,12 @@ def get_games_id(comp):
     for day in dates:
         driver.get(
             'http://www.espn.com.ar/futbol/resultados/_/liga/{}/fecha/{}'.
-            format(comp, day))
+            format(comp, day)
+        )
 
         game_link_driver = driver.find_elements_by_class_name(
-            'mobileScoreboardLink  ')
+            'mobileScoreboardLink  '
+        )
 
         for game_driver in game_link_driver:
             game_id = game_driver.get_attribute('href')[46:53]
@@ -198,7 +201,8 @@ def get_penalties(id):
     home_players, away_players = players
 
     home_penalties, away_penalties = penalty_attribution(
-        shooters, home_players, away_players)
+        shooters, home_players, away_players
+    )
 
     return [home_penalties, away_penalties]
 
@@ -249,8 +253,9 @@ def get_goal_minutes(html, goal_scorers, home_players, away_players):
         elif '+' in goals_scored_raw[key]:
             index = goals_scored_raw[key].index('+')
             goals_scored[key] = str(
-                int(goals_scored_raw[key][index - 3:index - 1]) + int(
-                    goals_scored_raw[key][index + 1])) + "'"
+                int(goals_scored_raw[key][index - 3:index - 1]) +
+                int(goals_scored_raw[key][index + 1])
+            ) + "'"
         else:
             goals_scored[key] = goals_scored_raw[key]
 
@@ -364,10 +369,12 @@ def get_game_goals(id):
     home_players, away_players = players
 
     goal_scorers = get_scorers(goals_html)
-    goals_scored = get_goal_minutes(goals_html, goal_scorers, home_players,
-                                    away_players)
-    home_goals, away_goals = goal_attribution(goals_scored, home_players,
-                                              away_players)
+    goals_scored = get_goal_minutes(
+        goals_html, goal_scorers, home_players, away_players
+    )
+    home_goals, away_goals = goal_attribution(
+        goals_scored, home_players, away_players
+    )
 
     return home_goals, away_goals
 
@@ -405,8 +412,9 @@ def get_game_data(id, day, two_zero_minutes=200):
 
     first_goal = first_goal_team(goal_minutes[0], goal_minutes[1])
 
-    two_zero = two_zero_team(goal_minutes[0], goal_minutes[1],
-                             two_zero_minutes)
+    two_zero = two_zero_team(
+        goal_minutes[0], goal_minutes[1], two_zero_minutes
+    )
 
     if first_goal == 'home':
         first_goal = teams[0]
@@ -488,10 +496,12 @@ def main():
     df['away_points'] = df.apply(get_away_points, axis=1)
     df['competition'] = competition
 
-    path = 'data/game_data'
+    path = os.path.join('data', 'game_data')
     os.makedirs(path, exist_ok=True)
 
-    file_name = '{}/games_data_{}_{}.csv'.format(path, START_DATE, END_DATE)
+    file_name = os.path.join(
+        path, 'games_data_{}_{}.csv'.format(START_DATE, END_DATE)
+    )
 
     df.to_csv(file_name, index=False)
     print("File saved to {}".format(file_name))
