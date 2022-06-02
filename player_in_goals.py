@@ -43,8 +43,8 @@ def get_subs_names(subs_html):
 
     str_span = [str(s) for s in subs_html]
 
-    subs_in = [el[27:-7] for el in str_span if 'En:' in el]
-    subs_out = [el[50:-7] for el in str_span if 'Fuera:' in el]
+    subs_in = [el[27:-7] for el in str_span if 'Un:' in el]
+    subs_out = [el[50:-7] for el in str_span if 'Out:' in el]
 
     return subs_in, subs_out
 
