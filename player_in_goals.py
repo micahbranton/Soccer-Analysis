@@ -10,7 +10,7 @@ from game_data import get_game_goals, get_games_id, get_players, get_teams
 
 def get_team_names(id):
 
-    url = 'http://www.espn.com.ar/futbol/numeritos?juegoId=' + str(id)
+    url = 'https://www.espn.com/soccer/scoreboard?league=ger.1' + str(id)
 
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
